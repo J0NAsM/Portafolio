@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
+<title id="title">Organización del blog</title><desc id="desc">Las notas se agrupan por categoría y día para facilitar su lectura.</desc>
+<style>text{font-family:Arial,sans-serif}.k{font-size:14px;letter-spacing:2px;fill:#c9d8ea}.t{font-size:22px;font-weight:700;fill:#f1f6fc}.s{font-size:14px;fill:#c9d8ea}.n{fill:#335879;stroke:#9ac2eb;stroke-width:2}.b{fill:#eef6ff}.bt{font-size:13px;font-weight:bold;fill:#203b53}.l{stroke:#9ac2eb;stroke-width:2}</style>
+<rect width="1200" height="440" fill="#294667"/><path d="M0 84H1200M0 184H1200M0 284H1200M0 384H1200M100 0V440M300 0V440M500 0V440M700 0V440M900 0V440M1100 0V440" stroke="#5a7da4" opacity=".4"/>
+<text x="55" y="58" class="k">BLOG PERSONAL · LECTURA PROGRESIVA</text>
+<g transform="translate(85 145)"><rect class="n" width="235" height="180" rx="9"/><circle class="b" cx="31" cy="32" r="14"/><text x="26" y="37" class="bt">1</text><text x="31" y="90" class="t">Publicación</text><text x="31" y="120" class="s">Una idea, avance</text><text x="31" y="142" class="s">o aprendizaje real.</text></g>
+<path class="l" d="M320 235H465M735 235H880"/><path d="m453 226 16 9-16 9m415-18 16 9-16 9" fill="none" stroke="#eef6ff" stroke-width="2"/>
+<g transform="translate(465 145)"><rect class="n" width="270" height="180" rx="9"/><circle class="b" cx="31" cy="32" r="14"/><text x="26" y="37" class="bt">2</text><text x="31" y="90" class="t">Categoría</text><text x="31" y="120" class="s">Desarrollo, procesos,</text><text x="31" y="142" class="s">aprendizaje o proyecto.</text></g>
+<g transform="translate(880 145)"><rect class="n" width="235" height="180" rx="9"/><circle class="b" cx="31" cy="32" r="14"/><text x="26" y="37" class="bt">3</text><text x="31" y="90" class="t">Día</text><text x="31" y="120" class="s">Fecha visible para</text><text x="31" y="142" class="s">seguir la evolución.</text></g>
+</svg>

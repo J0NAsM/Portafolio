@@ -1,0 +1,8 @@
+/* Evidencia visual propia: diagramas conceptuales, no capturas de producción. */
+.project-visual{margin:0;display:grid;grid-template-rows:1fr auto}
+.project-visual img{display:block;width:100%;height:100%;min-height:285px;object-fit:cover}
+.project-visual figcaption{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;padding:13px 16px;background:#101514d9;color:#f5f5ef;line-height:1.25}
+.project-visual figcaption span{font:10px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:#d5f054;grid-row:span 2}
+.project-visual figcaption strong{font-size:13px}
+.project-visual figcaption small{font-size:11px;color:#c2ccc3}
+@media (max-width:800px){.project-visual img{min-height:220px}}

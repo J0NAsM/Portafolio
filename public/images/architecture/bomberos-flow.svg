@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="title desc">
+  <title id="title">Flujo conceptual de Gestión Bomberos</title><desc id="desc">Registro, seguimiento e historial institucional.</desc>
+  <style>text{font-family:Arial,sans-serif;fill:#fff0eb}.label{font-size:17px;font-weight:700}.sub{font-size:12px;fill:#edc5ba;letter-spacing:1.2px}.line{stroke:#f0a895;stroke-width:2}.node{fill:#803f36;stroke:#f0a895;stroke-width:2}.badge{fill:#fff0eb;stroke:none}.badgeText{fill:#4d211c;font-size:13px;font-weight:700}</style>
+  <rect width="960" height="600" fill="#7b3930"/><path d="M0 88H960M0 210H960M0 332H960M0 454H960M120 0V600M300 0V600M480 0V600M660 0V600M840 0V600" stroke="#ae6558" opacity=".4"/>
+  <text x="58" y="68" class="sub">DIAGRAMA CONCEPTUAL · INFORMACIÓN OPERATIVA</text>
+  <path class="line" d="M273 300H373M587 300H687"/><path d="m362 291 16 9-16 9m214-18 16 9-16 9" fill="none" stroke="#fff0eb" stroke-width="2"/>
+  <rect class="node" x="70" y="220" width="205" height="160" rx="8"/><circle class="badge" cx="102" cy="253" r="14"/><text x="97" y="258" class="badgeText">1</text><text x="102" y="304" class="label">Registro</text><text x="102" y="333" class="sub">CAPTURA ESTRUCTURADA</text>
+  <rect class="node" x="377" y="220" width="210" height="160" rx="8"/><circle class="badge" cx="409" cy="253" r="14"/><text x="404" y="258" class="badgeText">2</text><text x="409" y="304" class="label">Seguimiento</text><text x="409" y="333" class="sub">ESTADOS Y CONTROL</text>
+  <rect class="node" x="689" y="220" width="205" height="160" rx="8"/><circle class="badge" cx="721" cy="253" r="14"/><text x="716" y="258" class="badgeText">3</text><text x="721" y="304" class="label">Historial</text><text x="721" y="333" class="sub">CONSULTA Y REPORTE</text>
+  <text x="58" y="538" class="sub">REPRESENTACIÓN PÚBLICA; NO EXPONE DATOS INSTITUCIONALES.</text>
+</svg>

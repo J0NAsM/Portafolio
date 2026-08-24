@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+<title id="title">Mapa conceptual del enfoque profesional</title><desc id="desc">Una necesidad real se traduce en reglas, datos y una solución operable.</desc>
+<style>text{font-family:Arial,sans-serif}.k{font-size:14px;letter-spacing:2px;fill:#a8c9b6}.t{font-size:25px;font-weight:700;fill:#f2f8f1}.s{font-size:15px;fill:#c7d7cc}.n{fill:#214d3e;stroke:#9ed0b2;stroke-width:2}.l{stroke:#9ed0b2;stroke-width:2;fill:none}.b{fill:#d5f054}.bt{font-size:14px;font-weight:bold;fill:#17241d}</style>
+<rect width="1200" height="620" fill="#183a32"/><path d="M0 90H1200M0 210H1200M0 330H1200M0 450H1200M120 0V620M360 0V620M600 0V620M840 0V620M1080 0V620" stroke="#4d7767" opacity=".4"/>
+<text x="55" y="65" class="k">ENFOQUE PROFESIONAL · SISTEMAS PARA PROCESOS REALES</text>
+<path class="l" d="M290 323H410M590 323H710M890 323H1010"/><path d="m396 314 17 9-17 9m176-18 17 9-17 9m176-18 17 9-17 9" fill="none" stroke="#d5f054" stroke-width="2"/>
+<g transform="translate(55 230)"><rect class="n" width="235" height="185" rx="10"/><circle class="b" cx="33" cy="34" r="16"/><text x="28" y="39" class="bt">1</text><text x="33" y="91" class="t">Contexto</text><text x="33" y="122" class="s">Personas, operación</text><text x="33" y="146" class="s">y necesidad real.</text></g>
+<g transform="translate(410 230)"><rect class="n" width="180" height="185" rx="10"/><circle class="b" cx="33" cy="34" r="16"/><text x="28" y="39" class="bt">2</text><text x="33" y="91" class="t">Reglas</text><text x="33" y="122" class="s">Estados, roles</text><text x="33" y="146" class="s">y decisiones.</text></g>
+<g transform="translate(710 230)"><rect class="n" width="180" height="185" rx="10"/><circle class="b" cx="33" cy="34" r="16"/><text x="28" y="39" class="bt">3</text><text x="33" y="91" class="t">Datos</text><text x="33" y="122" class="s">Registro, consulta</text><text x="33" y="146" class="s">y trazabilidad.</text></g>
+<g transform="translate(1010 230)"><rect class="n" width="145" height="185" rx="10"/><circle class="b" cx="33" cy="34" r="16"/><text x="28" y="39" class="bt">4</text><text x="33" y="91" class="t">Uso</text><text x="33" y="122" class="s">Solución</text><text x="33" y="146" class="s">operable.</text></g>
+<text x="55" y="550" class="k">DIAGRAMA DE POSICIONAMIENTO; NO REPRESENTA UNA ARQUITECTURA INTERNA.</text>
+</svg>

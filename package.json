@@ -1,0 +1,21 @@
+{
+  "name": "jonas-martinez-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/build-static.mjs",
+    "preview": "vite preview",
+    "start": "node server.js",
+    "test": "node scripts/verify.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "express-basic-auth": "^1.2.1",
+    "pdfkit": "^0.17.1"
+  },
+  "devDependencies": { "vite": "^7.1.7" }
+}
