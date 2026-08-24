@@ -14,12 +14,14 @@ Abre `index.html` desde el explorador de archivos. No requiere Node.js, npm ni s
 ## Uso opcional con servidor local
 
 ```bash
-npm install
+npm ci
 npm run dev
 npm run build
-npm run preview
+npm test
 npm start
 ```
+
+Requiere Node.js 20.19 o superior (se recomienda la versión 22 indicada en `.nvmrc`). `npm ci` instala exactamente las dependencias bloqueadas en `package-lock.json`; utiliza `npm install` solo cuando vayas a modificar dependencias.
 
 El build estático queda en `dist/` y conserva los archivos HTML, CSS y JavaScript clásicos para abrirse sin bundler. Para un hosting estático con rutas SPA, configura una regla de fallback a `index.html`.
 
@@ -50,7 +52,7 @@ La ruta `#/cv` abre una plantilla imprimible de una sola columna. Sus campos edi
 
 El proyecto puede ejecutarse como servidor con `npm start`. Copia `.env.example` a `.env`, completa las tres credenciales obligatorias y abre `http://localhost:3000/admin/errores`. En producción usa HTTPS y una contraseña única; no publiques el archivo `.env`.
 
-El panel está protegido mediante autenticación básica, permite filtrar por ruta, referrer y fechas, y exporta los registros filtrados a Excel (`.xlsx`), PDF, CSV o TXT en forma de tabla. Sin `ERROR_LOG_SALT`, el endpoint 404 no guarda registros. Los logs se guardan localmente en `data/404-errors.json`, no se versionan y se depuran automáticamente según `ERROR_LOG_RETENTION_DAYS`.
+El panel está protegido mediante autenticación básica, permite filtrar por ruta, referrer y fechas, y exporta los registros filtrados a Excel (`.xlsx`), PDF, CSV o TXT en forma de tabla. Sin `ERROR_LOG_SALT`, el endpoint 404 no guarda registros. Los logs se guardan localmente en `data/404-errors.json`, no se versionan y se depuran automáticamente según `ERROR_LOG_RETENTION_DAYS`; `ERROR_LOG_MAX_RECORDS` limita el crecimiento del archivo.
 
 El registro está minimizado: ruta, referrer, idioma, zona horaria, resolución, user-agent, IP enmascarada y hash técnico. No añade fingerprinting, geolocalización externa ni anuncios. Los CSV y XLSX neutralizan valores que podrían interpretarse como fórmulas. Consulta `public/privacy.html` antes de desplegar y adapta el aviso legal a tu jurisdicción.
 
@@ -58,6 +60,10 @@ El registro está minimizado: ruta, referrer, idioma, zona horaria, resolución,
 
 Tema claro/oscuro/sistema persistente, navegación de teclado, foco visible, comando `Ctrl/Cmd + K`, navegación móvil, reduced motion por ausencia de animaciones esenciales, metadatos SEO, `robots.txt`, sitemap, manifest y vista 404.
 
+Cada push y pull request a `main` ejecuta en GitHub Actions la instalación reproducible, el build y las verificaciones. Dependabot propone mensualmente actualizaciones de dependencias y de las acciones de GitHub.
+
 ## Deploy
 
 Para mostrar solo el portfolio, puedes ejecutar `npm run build` y publicar `dist/` en un host estático. El panel de errores y las exportaciones requieren un entorno Node.js que ejecute `server.js`; no estarán disponibles en un deploy estrictamente estático. Habilita fallback SPA para las rutas internas.
+
+Antes de producción, confirma que el dominio configurado en `public/robots.txt` y `public/sitemap.xml` sea el definitivo, habilita HTTPS y define las variables de `.env` únicamente en el proveedor de hosting. No subas `.env`, la carpeta `data/` ni sus registros.

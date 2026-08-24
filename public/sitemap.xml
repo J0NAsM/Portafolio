@@ -1,1 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://jonasemanuel.dev/</loc></url><url><loc>https://jonasemanuel.dev/proyectos</loc></url><url><loc>https://jonasemanuel.dev/sobre-mi</loc></url><url><loc>https://jonasemanuel.dev/experiencia</loc></url><url><loc>https://jonasemanuel.dev/formacion</loc></url><url><loc>https://jonasemanuel.dev/stack</loc></url><url><loc>https://jonasemanuel.dev/cv</loc></url><url><loc>https://jonasemanuel.dev/contacto</loc></url></urlset>
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://jonasemanuel.dev/</loc></url>
+  <url><loc>https://jonasemanuel.dev/proyectos</loc></url>
+  <url><loc>https://jonasemanuel.dev/muestras</loc></url>
+  <url><loc>https://jonasemanuel.dev/sobre-mi</loc></url>
+  <url><loc>https://jonasemanuel.dev/experiencia</loc></url>
+  <url><loc>https://jonasemanuel.dev/formacion</loc></url>
+  <url><loc>https://jonasemanuel.dev/stack</loc></url>
+  <url><loc>https://jonasemanuel.dev/cv</loc></url>
+  <url><loc>https://jonasemanuel.dev/contacto</loc></url>
+  <url><loc>https://jonasemanuel.dev/blog</loc></url>
+  <url><loc>https://jonasemanuel.dev/privacidad</loc></url>
+</urlset>

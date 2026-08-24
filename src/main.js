@@ -1,12 +1,16 @@
 const { profile, services, projects, skills, experience } = window.portfolioData;
 const blogPosts = Array.isArray(window.portfolioBlogPosts) ? window.portfolioBlogPosts : [];
 const app = document.querySelector('#app');
+const storageGet = key => { try { return localStorage.getItem(key); } catch { return null; } };
+const storageSet = (key, value) => { try { localStorage.setItem(key, value); } catch {} };
 
-let theme = localStorage.getItem('theme') || 'system';
+let theme = storageGet('theme') || 'system';
 let menuOpen = false;
 let paletteOpen = false;
 let projectFilter = 'Todos';
 let blogCategory = 'Todas';
+let focusTarget = '';
+let shouldScrollToTop = false;
 
 const isLocalFile = location.protocol === 'file:';
 const currentPath = () => isLocalFile ? (location.hash.slice(1) || '/') : (location.pathname.replace(/\/$/, '') || '/');
@@ -23,12 +27,14 @@ function setMeta(title, description) {
   document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
   document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
   document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', document.documentElement.dataset.theme === 'dark' ? '#101514' : '#f5f5ef');
 }
 
 function applyTheme() {
   const resolved = theme === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
   document.documentElement.dataset.theme = resolved;
-  localStorage.setItem('theme', theme);
+  document.documentElement.style.colorScheme = resolved;
+  storageSet('theme', theme);
 }
 
 function socialLinks() {
@@ -41,7 +47,10 @@ function socialLinks() {
 
 function nav() {
   const path = currentPath();
-  const item = (label, url) => `<a ${internal(url)} class="${path === url || (url === '/proyectos' && path.startsWith('/proyectos/')) ? 'active' : ''}">${label}</a>`;
+  const item = (label, url) => {
+    const active = path === url || (url === '/proyectos' && path.startsWith('/proyectos/'));
+    return `<a ${internal(url)} class="${active ? 'active' : ''}"${active ? ' aria-current="page"' : ''}>${label}</a>`;
+  };
   const links = `${item('Inicio', '/')}${item('Proyectos', '/proyectos')}${item('Demos', '/muestras')}${item('Experiencia', '/experiencia')}${item('Stack', '/stack')}${item('CV', '/cv')}${hasContact() ? item('Contacto', '/contacto') : ''}`;
   return `<header class="site-header">
     <a class="brand" ${internal('/')} aria-label="Inicio de ${profile.shortName}"><span class="brand-mark">J</span><span>Jonas<span class="muted">.dev</span></span></a>
@@ -50,7 +59,7 @@ function nav() {
       <button class="theme-button" type="button" data-theme-toggle aria-label="Cambiar tema; actual: ${theme}">${theme === 'dark' ? icon('moon') : theme === 'light' ? icon('sun') : '◌'}<span>${theme}</span></button>
       <button class="menu-button" type="button" data-menu aria-expanded="${menuOpen}" aria-controls="mobile-menu">${menuOpen ? icon('close') : '☰'}<span class="sr-only">Menú</span></button>
     </div>
-    <nav id="mobile-menu" class="mobile-nav ${menuOpen ? 'open' : ''}" aria-label="Navegación móvil">${links}</nav>
+    <nav id="mobile-menu" class="mobile-nav ${menuOpen ? 'open' : ''}" aria-label="Navegación móvil" aria-hidden="${!menuOpen}">${links}</nav>
   </header>`;
 }
 
@@ -63,7 +72,7 @@ const cta = (label, path, kind = '') => `<a class="button ${kind}" ${internal(pa
 
 function projectVisual(project, compact = false) {
   return `<figure class="project-visual ${project.tone} ${compact ? 'compact' : ''}">
-    <img src="public/images/architecture/${project.slug}-flow.svg" alt="Diagrama conceptual de ${project.name}: ${project.modules.slice(0, 3).join(', ')}.">
+    <img src="public/images/architecture/${project.slug}-flow.svg" alt="Diagrama conceptual de ${project.name}: ${project.modules.slice(0, 3).join(', ')}." loading="lazy" decoding="async">
     <figcaption><span>Diagrama conceptual</span><strong>${project.name}</strong><small>Representación pública; no expone datos ni arquitectura interna.</small></figcaption>
   </figure>`;
 }
@@ -79,7 +88,7 @@ function productMock(project) {
 }
 
 function visualFigure(name, source, alt, caption, className = '') {
-  return `<figure class="visual-figure ${className}"><img src="public/images/general/${source}" alt="${alt}"><figcaption><span class="visual-label">${name}</span> · ${caption}</figcaption></figure>`;
+  return `<figure class="visual-figure ${className}"><img src="public/images/general/${source}" alt="${alt}" loading="lazy" decoding="async"><figcaption><span class="visual-label">${name}</span> · ${caption}</figcaption></figure>`;
 }
 
 function evidenceWall() {
@@ -118,7 +127,7 @@ function home() {
 function projectsPage() {
   const filters = ['Todos', ...new Set(projects.map(project => project.category.split(' · ')[0]))];
   const visibleProjects = projectFilter === 'Todos' ? projects : projects.filter(project => project.category.startsWith(projectFilter));
-  return `<main id="main" class="page"><div class="page-intro">${sectionTitle('Proyectos', 'Sistemas pensados para el mundo real.', 'Una selección de problemas, restricciones y soluciones. Los proyectos sensibles se presentan sin información confidencial.')}</div><div class="project-filters" aria-label="Filtrar proyectos">${filters.map(filter => `<button type="button" class="${filter === projectFilter ? 'active' : ''}" data-project-filter="${filter}">${filter}</button>`).join('')}</div><p class="project-count">${visibleProjects.length} caso${visibleProjects.length === 1 ? '' : 's'} de estudio.</p><div class="project-list">${visibleProjects.map(project => `<article class="project-row"><div><p class="eyebrow">${project.id} · ${project.category}</p><h2>${project.name} ${status(project.status)}</h2><p>${project.lead}</p><div class="badges">${project.stack.map(item => `<span>${item}</span>`).join('')}</div>${cta('Abrir caso', `/proyectos/${project.slug}`, 'text-button')}</div>${projectVisual(project, true)}</article>`).join('')}</div></main>`;
+  return `<main id="main" class="page"><div class="page-intro">${sectionTitle('Proyectos', 'Sistemas pensados para el mundo real.', 'Una selección de problemas, restricciones y soluciones. Los proyectos sensibles se presentan sin información confidencial.')}</div><div class="project-filters" aria-label="Filtrar proyectos">${filters.map(filter => `<button type="button" class="${filter === projectFilter ? 'active' : ''}" data-project-filter="${filter}" aria-pressed="${filter === projectFilter}">${filter}</button>`).join('')}</div><p class="project-count" aria-live="polite">${visibleProjects.length} caso${visibleProjects.length === 1 ? '' : 's'} de estudio.</p><div class="project-list">${visibleProjects.map(project => `<article class="project-row"><div><p class="eyebrow">${project.id} · ${project.category}</p><h2>${project.name} ${status(project.status)}</h2><p>${project.lead}</p><div class="badges">${project.stack.map(item => `<span>${item}</span>`).join('')}</div>${cta('Abrir caso', `/proyectos/${project.slug}`, 'text-button')}</div>${projectVisual(project, true)}</article>`).join('')}</div></main>`;
 }
 
 function caseStudy(project) {
@@ -168,7 +177,7 @@ function blogPage() {
   const categories = ['Todas', ...new Set(posts.map(post => post.category))];
   const visiblePosts = blogCategory === 'Todas' ? posts : posts.filter(post => post.category === blogCategory);
   const entries = visiblePosts.map(post => `<article class="blog-card"><p class="eyebrow"><time datetime="${escapeHtml(post.publishedAt)}">${blogDate(post.publishedAt)}</time> · ${escapeHtml(post.category)}</p><h2>${escapeHtml(post.title)}</h2><p>${escapeHtml(post.excerpt)}</p><a class="back-link" ${internal(`/blog/${post.slug}`)}>Leer publicación →</a></article>`).join('') || '<div class="blog-empty"><h2>Aún no hay publicaciones en esta categoría.</h2><p>Vuelve pronto para conocer avances, aprendizajes y decisiones de los proyectos.</p></div>';
-  return `<main id="main" class="page blog-page"><div class="page-intro narrow">${sectionTitle('Blog', 'Notas de trabajo, aprendizaje y proceso.', 'Un espacio para compartir avances, decisiones y reflexiones.')}</div>${visualFigure('Cómo leer el blog', 'blog-organizer.svg', 'Diagrama de organización del blog: publicación, categoría y fecha.', 'Las notas se pueden recorrer por tema y por fecha.', 'blog-visual')}<div class="blog-filters" aria-label="Filtrar publicaciones por categoría">${categories.map(category => `<button class="${category === blogCategory ? 'active' : ''}" type="button" data-blog-category="${escapeHtml(category)}">${escapeHtml(category)}</button>`).join('')}</div><p class="blog-count">${visiblePosts.length} publicación${visiblePosts.length === 1 ? '' : 'es'} visible${visiblePosts.length === 1 ? '' : 's'}.</p><section class="blog-list">${entries}</section></main>`;
+  return `<main id="main" class="page blog-page"><div class="page-intro narrow">${sectionTitle('Blog', 'Notas de trabajo, aprendizaje y proceso.', 'Un espacio para compartir avances, decisiones y reflexiones.')}</div>${visualFigure('Cómo leer el blog', 'blog-organizer.svg', 'Diagrama de organización del blog: publicación, categoría y fecha.', 'Las notas se pueden recorrer por tema y por fecha.', 'blog-visual')}<div class="blog-filters" aria-label="Filtrar publicaciones por categoría">${categories.map(category => `<button class="${category === blogCategory ? 'active' : ''}" type="button" data-blog-category="${escapeHtml(category)}" aria-pressed="${category === blogCategory}">${escapeHtml(category)}</button>`).join('')}</div><p class="blog-count" aria-live="polite">${visiblePosts.length} publicación${visiblePosts.length === 1 ? '' : 'es'} visible${visiblePosts.length === 1 ? '' : 's'}.</p><section class="blog-list">${entries}</section></main>`;
 }
 
 function blogArticle(post) {
@@ -179,7 +188,7 @@ function blogArticle(post) {
 
 function palette() {
   const contactItem = hasContact() ? '<button data-route="/contacto">Contacto <kbd>↵</kbd></button>' : '';
-  return `<div class="palette-overlay ${paletteOpen ? 'visible' : ''}" data-palette-close><div class="palette" role="dialog" aria-modal="true" aria-label="Acciones rápidas"><div><span>⌘ K</span><input data-palette-input placeholder="Ir a…" autofocus></div><button data-route="/proyectos">Proyectos <kbd>↵</kbd></button><button data-route="/muestras">Muestras visuales <kbd>↵</kbd></button><button data-route="/experiencia">Experiencia <kbd>↵</kbd></button><button data-route="/cv">CV ATS <kbd>↵</kbd></button>${contactItem}<button data-theme-toggle>Cambiar tema <kbd>↵</kbd></button></div></div>`;
+  return `<div class="palette-overlay ${paletteOpen ? 'visible' : ''}" data-palette-close aria-hidden="${!paletteOpen}"><div class="palette" role="dialog" aria-modal="true" aria-label="Acciones rápidas"><div><span>⌘ K</span><input data-palette-input placeholder="Ir a…" aria-label="Filtrar acciones rápidas"></div><button data-route="/proyectos">Proyectos <kbd>↵</kbd></button><button data-route="/muestras">Muestras visuales <kbd>↵</kbd></button><button data-route="/experiencia">Experiencia <kbd>↵</kbd></button><button data-route="/cv">CV ATS <kbd>↵</kbd></button>${contactItem}<button data-theme-toggle>Cambiar tema <kbd>↵</kbd></button></div></div>`;
 }
 
 function getPage() {
@@ -208,15 +217,29 @@ function getPage() {
 function render() {
   const [content, title, description] = getPage();
   app.innerHTML = nav() + content + footer() + palette();
-  setMeta(title, description);
   applyTheme();
+  setMeta(title, description);
   bind();
-  window.scrollTo(0, 0);
+  const main = app.querySelector('main');
+  if (main) main.tabIndex = -1;
+  if (paletteOpen) app.querySelector('[data-palette-input]')?.focus();
+  else if (focusTarget === 'main') main?.focus();
+  else if (focusTarget === 'menu') app.querySelector('[data-menu]')?.focus();
+  else if (focusTarget === 'theme') app.querySelector('[data-theme-toggle]')?.focus();
+  else if (focusTarget === 'project-filter') [...app.querySelectorAll('[data-project-filter]')].find(button => button.dataset.projectFilter === projectFilter)?.focus();
+  else if (focusTarget === 'blog-filter') [...app.querySelectorAll('[data-blog-category]')].find(button => button.dataset.blogCategory === blogCategory)?.focus();
+  focusTarget = '';
+  if (shouldScrollToTop) {
+    window.scrollTo(0, 0);
+    shouldScrollToTop = false;
+  }
 }
 
 function go(path) {
   menuOpen = false;
   paletteOpen = false;
+  focusTarget = 'main';
+  shouldScrollToTop = true;
   if (isLocalFile) location.hash = path;
   else { history.pushState({}, '', path); render(); }
 }
@@ -226,9 +249,10 @@ function bind() {
     event.preventDefault();
     go(element.dataset.route);
   }));
-  document.querySelector('[data-menu]')?.addEventListener('click', () => { menuOpen = !menuOpen; render(); });
+  document.querySelector('[data-menu]')?.addEventListener('click', () => { menuOpen = !menuOpen; focusTarget = 'menu'; render(); });
   document.querySelectorAll('[data-theme-toggle]').forEach(element => element.addEventListener('click', () => {
     theme = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
+    focusTarget = 'theme';
     render();
   }));
   document.querySelector('[data-palette-close]')?.addEventListener('click', event => {
@@ -241,24 +265,33 @@ function bind() {
   document.querySelector('[data-print-cv]')?.addEventListener('click', () => window.print());
   document.querySelectorAll('[data-cv-field]').forEach(field => {
     const key = `cv-${field.dataset.cvField}`;
-    const saved = localStorage.getItem(key);
+    const saved = storageGet(key);
     if (saved) field.textContent = saved;
-    field.addEventListener('input', () => localStorage.setItem(key, field.textContent.trim()));
+    field.addEventListener('input', () => storageSet(key, field.textContent.trim()));
   });
 }
 
 addEventListener('click', event => {
   const projectButton = event.target.closest('[data-project-filter]');
-  if (projectButton) { projectFilter = projectButton.dataset.projectFilter || 'Todos'; render(); }
+  if (projectButton) { projectFilter = projectButton.dataset.projectFilter || 'Todos'; focusTarget = 'project-filter'; render(); }
   const blogButton = event.target.closest('[data-blog-category]');
-  if (blogButton) { blogCategory = blogButton.dataset.blogCategory || 'Todas'; render(); }
+  if (blogButton) { blogCategory = blogButton.dataset.blogCategory || 'Todas'; focusTarget = 'blog-filter'; render(); }
 });
-addEventListener('popstate', render);
-addEventListener('hashchange', render);
+addEventListener('popstate', () => { focusTarget = 'main'; shouldScrollToTop = true; render(); });
+addEventListener('hashchange', () => { focusTarget = 'main'; shouldScrollToTop = true; render(); });
 addEventListener('keydown', event => {
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); paletteOpen = true; render(); }
-  if (event.key === 'Escape' && paletteOpen) { paletteOpen = false; render(); }
+  if (event.key === 'Escape' && paletteOpen) { paletteOpen = false; focusTarget = 'main'; render(); }
+  if (event.key === 'Tab' && paletteOpen) {
+    const focusable = [...document.querySelectorAll('.palette input, .palette button:not([hidden])')];
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+  }
 });
+
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (theme === 'system') render(); });
 
 applyTheme();
 render();

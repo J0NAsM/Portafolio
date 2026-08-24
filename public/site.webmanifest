@@ -1,1 +1,1 @@
-{"name":"Jonas Martínez — Portfolio","short_name":"Jonas.dev","start_url":"/","display":"standalone","background_color":"#101514","theme_color":"#101514","icons":[{"src":"/favicon.svg","sizes":"any","type":"image/svg+xml"}]}
+{"name":"Jonas Martínez — Portfolio","short_name":"Jonas.dev","id":"/","start_url":"/","display":"standalone","background_color":"#101514","theme_color":"#101514","icons":[{"src":"favicon.svg","sizes":"any","type":"image/svg+xml"}]}

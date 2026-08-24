@@ -16,10 +16,26 @@ const adminUser = process.env.ADMIN_USER || '';
 const adminPassword = process.env.ADMIN_PASSWORD || '';
 const logSalt = process.env.ERROR_LOG_SALT || '';
 const retentionDays = Number(process.env.ERROR_LOG_RETENTION_DAYS || 30);
+const configuredMaxLogRecords = Number(process.env.ERROR_LOG_MAX_RECORDS || 5000);
+const maxLogRecords = Number.isFinite(configuredMaxLogRecords) ? Math.min(Math.max(configuredMaxLogRecords, 100), 50000) : 5000;
 const logFile = path.join(root, 'data', '404-errors.json');
 const rateCache = new Map();
 let logWriteChain = Promise.resolve();
 let blogWriteChain = Promise.resolve();
+let lastRateCachePrune = 0;
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "connect-src 'self'",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "img-src 'self' data:",
+  "object-src 'none'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com"
+].join('; ');
 
 app.set('trust proxy', process.env.TRUST_PROXY === '1');
 app.disable('x-powered-by');
@@ -27,11 +43,13 @@ app.use((request, response, next) => {
   response.set({
     'Cross-Origin-Opener-Policy': 'same-origin',
     'Cross-Origin-Resource-Policy': 'same-origin',
+    'Content-Security-Policy': contentSecurityPolicy,
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY'
   });
+  if (request.secure) response.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   if (request.path.startsWith('/admin/')) response.set('Cache-Control', 'no-store, private');
   next();
 });
@@ -53,18 +71,39 @@ const nowDate = () => new Date().toISOString().slice(0, 10);
 function getIp(request) { return request.ip || request.socket.remoteAddress || 'unknown'; }
 function hashIp(ip) { return crypto.createHash('sha256').update(`${logSalt}:${ip}`).digest('hex'); }
 function maskIp(ip) { const parts = ip.split('.'); return parts.length === 4 ? `${parts[0]}.${parts[1]}.${parts[2]}.xxx` : `${ip.split(':').slice(0, 3).join(':')}:…`; }
-function allowedToLog(ip) { const now = Date.now(); const value = rateCache.get(ip) || { start: now, count: 0 }; if (now - value.start > 3600000) { value.start = now; value.count = 0; } value.count += 1; rateCache.set(ip, value); return value.count <= 12; }
+function allowedToLog(ip) {
+  const now = Date.now();
+  if (now - lastRateCachePrune > 300000) {
+    for (const [cachedIp, value] of rateCache) if (now - value.start > 3600000) rateCache.delete(cachedIp);
+    lastRateCachePrune = now;
+  }
+  const value = rateCache.get(ip) || { start: now, count: 0 };
+  if (now - value.start > 3600000) { value.start = now; value.count = 0; }
+  value.count += 1;
+  rateCache.set(ip, value);
+  return value.count <= 12;
+}
 function validDate(value) { const text = safeText(value, 10); return /^\d{4}-\d{2}-\d{2}$/.test(text) && !Number.isNaN(new Date(`${text}T00:00:00`).getTime()) ? text : ''; }
 async function readLogs() { try { const parsed = JSON.parse(await fs.readFile(logFile, 'utf8')); return Array.isArray(parsed) ? parsed : []; } catch (error) { if (error.code === 'ENOENT') return []; throw error; } }
 async function writeLogs(records) { await fs.mkdir(path.dirname(logFile), { recursive: true }); const temporary = `${logFile}.${process.pid}.tmp`; await fs.writeFile(temporary, JSON.stringify(records, null, 2)); await fs.rename(temporary, logFile); }
 function serializeLogWrite(task) { const execution = logWriteChain.then(task, task); logWriteChain = execution.catch(() => {}); return execution; }
-async function pruneLogs() { if (!Number.isFinite(retentionDays) || retentionDays <= 0) return; return serializeLogWrite(async () => { const boundary = Date.now() - retentionDays * 86400000; const records = await readLogs(); const kept = records.filter(record => new Date(record.createdAt).getTime() >= boundary); if (kept.length !== records.length) await writeLogs(kept); }); }
+async function pruneLogs() { return serializeLogWrite(async () => { const records = await readLogs(); const boundary = Date.now() - retentionDays * 86400000; const retained = Number.isFinite(retentionDays) && retentionDays > 0 ? records.filter(record => new Date(record.createdAt).getTime() >= boundary) : records; const kept = retained.slice(-maxLogRecords); if (kept.length !== records.length) await writeLogs(kept); }); }
 function filters(query) { return { route: safeText(query.route, 180), referrer: safeText(query.referrer, 250), from: validDate(query.from), to: validDate(query.to) }; }
 function filtered(records, filter) { return records.filter(record => { const time = new Date(record.createdAt).getTime(); return (!filter.route || record.route.includes(filter.route)) && (!filter.referrer || record.referrer.includes(filter.referrer)) && (!filter.from || time >= new Date(`${filter.from}T00:00:00`).getTime()) && (!filter.to || time <= new Date(`${filter.to}T23:59:59.999`).getTime()); }).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)); }
 function rows(records) { return records.map(record => ({ Fecha: record.createdAt, Ruta: record.route, Referrer: record.referrer || '', 'IP (enmascarada)': record.ipMasked, Idioma: record.language || '', 'Zona horaria': record.timezone || '', Pantalla: record.screen || '', 'User-Agent': record.userAgent || '' })); }
 function asTxt(data) { const headers = ['Fecha', 'Ruta', 'Referrer', 'IP (enmascarada)', 'Idioma', 'Zona horaria']; const cells = data.map(row => headers.map(header => String(row[header] || '').replace(/[\r\n]/g, ' '))); const widths = headers.map((header, index) => Math.min(34, Math.max(header.length, ...cells.map(row => row[index].length)))); const line = `+${widths.map(width => '-'.repeat(width + 2)).join('+')}+`; const draw = row => `|${row.map((cell,index) => ` ${cell.slice(0,widths[index]).padEnd(widths[index])} `).join('|')}|`; return [line, draw(headers), line, ...cells.map(draw), line].join('\n'); }
 function admin(request, response, next) { if (!configured()) return response.status(503).send('Panel no configurado. Define ADMIN_USER, ADMIN_PASSWORD y ERROR_LOG_SALT en .env.'); return basicAuth({ users: { [adminUser]: adminPassword }, challenge: true, realm: 'Panel de errores' })(request, response, next); }
-function sameOrigin(request, response, next) { const origin = request.get('origin'); if (origin) { try { if (new URL(origin).host !== request.get('host')) return response.status(403).send('Origen no permitido.'); } catch { return response.status(403).send('Origen no permitido.'); } } next(); }
+function sameOrigin(request, response, next) {
+  const origin = request.get('origin');
+  const referer = request.get('referer');
+  const expected = `${request.protocol}://${request.get('host')}`;
+  const candidate = origin || referer;
+  if (!candidate) return response.status(403).send('No se pudo verificar el origen.');
+  try {
+    if (new URL(candidate).origin !== expected) return response.status(403).send('Origen no permitido.');
+  } catch { return response.status(403).send('Origen no permitido.'); }
+  next();
+}
 function serializeBlogWrite(task) { const execution = blogWriteChain.then(task, task); blogWriteChain = execution.catch(() => {}); return execution; }
 function blogPanel(posts, draft, notice = '') { const field = (name, value = '') => escapeHtml(value); const postList = posts.map(post => `<article><div><strong>${escapeHtml(post.title)}</strong><small>${escapeHtml(post.category)} · ${escapeHtml(post.publishedAt)} · ${post.published ? 'Publicado' : 'Borrador'}</small></div><div><a class="button alt" href="/admin/blog?edit=${encodeURIComponent(post.id)}">Editar</a><form method="post" action="/admin/blog/${encodeURIComponent(post.id)}/delete" onsubmit="return confirm('¿Eliminar esta publicación?')"><button class="button danger">Eliminar</button></form></div></article>`).join('') || '<p>Aún no hay artículos. Crea el primero con el formulario.</p>'; return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administrar blog</title><style>body{font:15px Arial,sans-serif;max-width:1100px;margin:32px auto;padding:0 18px;color:#17211c;background:#f6f7f4}a{color:inherit}h1{margin-bottom:4px}.meta{color:#536057}.nav{display:flex;gap:12px;margin:18px 0}.panel{background:#fff;padding:20px;border:1px solid #d5d9d2;margin:18px 0}.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.form label{display:grid;gap:5px;font-size:12px;font-weight:bold}.form label.full{grid-column:1/-1}.form input,.form textarea,.form select{font:16px Arial,sans-serif;padding:9px;border:1px solid #aab3aa;border-radius:3px}.form textarea{min-height:190px;resize:vertical}.button{display:inline-block;border:1px solid #1e3128;background:#1e3128;color:white;padding:9px 12px;text-decoration:none;border-radius:3px;cursor:pointer;font:14px Arial,sans-serif}.button.alt{background:#fff;color:#1e3128}.button.danger{background:#8c2626;border-color:#8c2626}.actions{display:flex;align-items:center;gap:12px}.post-list article{display:flex;justify-content:space-between;gap:15px;padding:14px 0;border-top:1px solid #d5d9d2}.post-list small{display:block;color:#536057;margin-top:4px}.post-list article>div:last-child{display:flex;gap:8px;align-items:start}.post-list form{margin:0}@media(max-width:650px){.form{grid-template-columns:1fr}.form label.full{grid-column:auto}.post-list article{display:block}.post-list article>div:last-child{margin-top:10px}}</style></head><body><h1>Blog personal</h1><p class="meta">Publica borradores o artículos visibles en <a href="/blog">/blog</a>. Los lectores podrán filtrar por categoría y ver la fecha de cada publicación.</p><nav class="nav"><a class="button alt" href="/admin/errores">Panel de errores</a><a class="button alt" href="/admin/blog">Nueva publicación</a></nav>${notice ? `<p class="meta">${escapeHtml(notice)}</p>` : ''}<section class="panel"><h2>${draft.id ? 'Editar publicación' : 'Nueva publicación'}</h2><form class="form" method="post" action="/admin/blog"><input type="hidden" name="id" value="${field('id', draft.id)}"><label class="full">Título<input required maxlength="120" name="title" value="${field('title', draft.title)}"></label><label>Categoría<input required maxlength="48" name="category" placeholder="Ej.: Desarrollo, Aprendizaje" value="${field('category', draft.category)}"></label><label>Fecha de publicación<input required type="date" name="publishedAt" value="${field('publishedAt', draft.publishedAt)}"></label><label class="full">Resumen<input required maxlength="300" name="excerpt" value="${field('excerpt', draft.excerpt)}"></label><label class="full">Contenido<textarea required maxlength="12000" name="body" placeholder="Escribe el artículo. Separa párrafos con una línea en blanco.">${field('body', draft.body)}</textarea></label><label><span>Estado</span><select name="published"><option value="">Borrador</option><option value="on" ${draft.published ? 'selected' : ''}>Publicado</option></select></label><div class="actions"><button class="button" type="submit">Guardar publicación</button>${draft.id ? '<a class="button alt" href="/admin/blog">Cancelar edición</a>' : ''}</div></form></section><section class="panel post-list"><h2>Publicaciones</h2>${postList}</section></body></html>`; }
 
@@ -96,7 +135,7 @@ app.post('/admin/blog/:id/delete', admin, sameOrigin, async (request, response, 
     response.redirect(303, '/admin/blog?ok=Publicación eliminada.');
   } catch (error) { next(error); }
 });
-app.post('/api/log-404', async (request, response) => {
+app.post('/api/log-404', sameOrigin, async (request, response) => {
   try {
     if (!logSalt) return response.status(204).end();
     const ip = getIp(request); const route = safeText(request.body?.route, 512);
@@ -106,7 +145,7 @@ app.post('/api/log-404', async (request, response) => {
       const records = await readLogs();
       const record = { createdAt: new Date().toISOString(), route, referrer: safeText(request.body?.referrer, 512), language: safeText(request.body?.language, 32), timezone: safeText(request.body?.timezone, 80), screen: safeText(request.body?.screen, 32), userAgent: safeText(request.get('user-agent'), 300), ipHash: hashIp(ip), ipMasked: maskIp(ip) };
       const duplicate = records.at(-1);
-      if (!duplicate || duplicate.route !== record.route || duplicate.ipHash !== record.ipHash || Date.parse(record.createdAt) - Date.parse(duplicate.createdAt) > 300000) { records.push(record); await writeLogs(records); }
+      if (!duplicate || duplicate.route !== record.route || duplicate.ipHash !== record.ipHash || Date.parse(record.createdAt) - Date.parse(duplicate.createdAt) > 300000) { records.push(record); await writeLogs(records.slice(-maxLogRecords)); }
     });
     response.status(204).end();
   } catch (error) { console.error('No se pudo registrar 404:', error); response.status(500).json({ ok: false }); }
