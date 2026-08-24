@@ -10,6 +10,7 @@ await mkdir(output, { recursive: true });
 await Promise.all([
   cp(path.join(root, 'index.html'), path.join(output, 'index.html')),
   cp(path.join(root, '404.html'), path.join(output, '404.html')),
+  cp(path.join(root, 'service-worker.js'), path.join(output, 'service-worker.js')),
   cp(path.join(root, 'src'), path.join(output, 'src'), { recursive: true }),
   cp(path.join(root, 'public'), path.join(output, 'public'), { recursive: true })
 ]);

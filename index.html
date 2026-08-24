@@ -29,11 +29,13 @@
     <link rel="stylesheet" href="src/visual-system.css" />
     <link rel="stylesheet" href="src/improvements.css" />
     <link rel="stylesheet" href="src/showcase.css" />
+    <link rel="stylesheet" href="src/loading.css" />
     <title>Jonas Martínez — Sistemas que resuelven</title>
   </head>
   <body>
     <a class="skip-link" href="#main">Saltar al contenido</a>
-    <div id="app"></div>
+    <div id="app"><div class="app-loader" role="status" aria-live="polite"><span class="loader-mark">J</span><div><strong>Jonas.dev</strong><small>Preparando el sistema</small></div></div></div>
+    <div id="connection-status" class="connection-status" role="status" aria-live="polite" hidden></div>
     <noscript>
       <main style="max-width:760px;margin:64px auto;padding:0 24px;font-family:Arial,sans-serif;line-height:1.6">
         <p>Análisis de sistemas · Desarrollo de software</p>

@@ -2,18 +2,21 @@
 const profile = {
   name: 'Jonas Emanuel Martínez Cáceres',
   shortName: 'Jonas Martínez',
-  role: 'Análisis de sistemas · Desarrollo de software',
-  focus: 'Sistemas empresariales · Procesos operativos · Datos',
+  role: 'Desarrollador Junior · Software e IA aplicada',
+  focus: 'Python · JavaScript · Sistemas empresariales · Experiencia de usuario',
   tagline: 'Analizo problemas. Diseño sistemas. Construyo soluciones.',
-  summary: 'Desarrollo soluciones tecnológicas para convertir procesos reales, reglas complejas e información dispersa en sistemas claros y operables.',
-  email: '', github: '', linkedin: '', whatsapp: '', cv: ''
+  summary: 'Desarrollo sistemas con Python, Java, JavaScript, PHP y tecnologías web. Uso la IA como herramienta de apoyo para analizar, construir y mejorar soluciones, con foco en procesos reales y experiencia de usuario.',
+  location: 'Carapeguá, Paraguay',
+  nationality: 'Paraguaya',
+  email: 'jemc2612@gmail.com', github: 'https://github.com/J0NAsM', linkedin: '', whatsapp: 'https://wa.me/595986914726', cv: ''
 };
 
 const services = [
   ['Desarrollo de software', 'Aplicaciones pensadas desde el problema: flujos, estados, excepciones y las personas que las operan.'],
+  ['Frontend y experiencia de usuario', 'Interfaces claras y responsivas, diseñadas para que las personas puedan completar tareas con menos fricción.'],
   ['Sistemas empresariales', 'Módulos, permisos, autorizaciones y reglas de negocio que sostienen la operación sin perder trazabilidad.'],
   ['Datos y bases de datos', 'Modelado, consultas e integración de información para que las decisiones tengan una fuente confiable.'],
-  ['Automatización + IA', 'IA aplicada a análisis, especificaciones, documentación y mejora de procesos de desarrollo.'],
+  ['Automatización + IA', 'IA aplicada como herramienta de apoyo para análisis, especificaciones, documentación y mejora del desarrollo; no como sustituto del criterio técnico.'],
   ['UX para operaciones', 'Interfaces que reducen fricción cuando el proceso no puede detenerse: claras, consistentes y responsables.']
 ];
 
@@ -61,15 +64,16 @@ const projects = [
 ];
 
 const skills = [
-  ['Frontend', 'HTML · CSS · JavaScript · React', 'Experiencia práctica construyendo interfaces web y flujos de uso.'],
-  ['Backend', 'Java · Python · APIs', 'Uso en lógica de negocio, automatización e integración.'],
+  ['Frontend', 'HTML · CSS · JavaScript', 'Buen manejo de interfaces web, responsive design y experiencia de usuario.'],
+  ['Backend', 'Python · Java · PHP · APIs', 'Desarrollo de sistemas, lógica de negocio, automatización e integración.'],
   ['Datos', 'PostgreSQL · MySQL · SQLite · SQL', 'Modelado y consulta para sistemas con información operativa.'],
   ['Ecosistema', 'Git · GitHub · DBeaver · GeneXus · Obsidian', 'Herramientas para construir, documentar y mantener.'],
   ['IA aplicada', 'Especificaciones · análisis · documentación · agentes', 'Exploración activa de IA como apoyo riguroso al desarrollo.']
 ];
 
 const experience = [
-  ['Softshop', 'Experiencia con GeneXus', 'Experiencia profesional con GeneXus en Softshop, vinculada al desarrollo de soluciones de software.'],
+  ['2025 — Actualidad', 'Desarrollador Junior · Softshop', 'Desarrollo de sistemas en Carapeguá, con IA como herramienta de apoyo y atención a frontend, experiencia de usuario y procesos de negocio.'],
+  ['Implementación', 'Facturación electrónica SIFEN', 'Participación en la implementación de facturación electrónica, sin exponer información técnica o comercial privada.'],
   ['Perfil actual', 'Sistemas y productos digitales', 'Diseño y desarrollo de soluciones enfocadas en procesos, datos y operaciones reales.'],
   ['Formación', 'Análisis de Sistemas Informáticos', 'Formación principal para traducir necesidades de negocio en sistemas estructurados.'],
   ['Operaciones', 'Experiencia de caja y operación', 'Comprensión directa de procesos bajo presión, recursos y resolución de incidentes.'],
