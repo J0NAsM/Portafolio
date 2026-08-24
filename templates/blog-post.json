@@ -1,0 +1,8 @@
+{
+  "title": "Título verificable de la publicación",
+  "category": "Desarrollo",
+  "excerpt": "Resume el aprendizaje o la decisión en una o dos frases.",
+  "body": "Explica el contexto, la decisión y el aprendizaje. Separa los párrafos con una línea en blanco.",
+  "publishedAt": "AAAA-MM-DD",
+  "published": false
+}

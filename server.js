@@ -10,6 +10,7 @@ import PDFDocument from 'pdfkit';
 import { normalizeBlogPost, readBlogPosts, writeBlogPosts } from './lib/blog-store.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
+const storageRoot = process.env.STORAGE_ROOT ? path.resolve(process.env.STORAGE_ROOT) : root;
 const app = express();
 const port = Number(process.env.PORT || 3000);
 const adminUser = process.env.ADMIN_USER || '';
@@ -18,7 +19,7 @@ const logSalt = process.env.ERROR_LOG_SALT || '';
 const retentionDays = Number(process.env.ERROR_LOG_RETENTION_DAYS || 30);
 const configuredMaxLogRecords = Number(process.env.ERROR_LOG_MAX_RECORDS || 5000);
 const maxLogRecords = Number.isFinite(configuredMaxLogRecords) ? Math.min(Math.max(configuredMaxLogRecords, 100), 50000) : 5000;
-const logFile = path.join(root, 'data', '404-errors.json');
+const logFile = path.join(storageRoot, 'data', '404-errors.json');
 const rateCache = new Map();
 let logWriteChain = Promise.resolve();
 let blogWriteChain = Promise.resolve();
@@ -88,7 +89,8 @@ async function readLogs() { try { const parsed = JSON.parse(await fs.readFile(lo
 async function writeLogs(records) { await fs.mkdir(path.dirname(logFile), { recursive: true }); const temporary = `${logFile}.${process.pid}.tmp`; await fs.writeFile(temporary, JSON.stringify(records, null, 2)); await fs.rename(temporary, logFile); }
 function serializeLogWrite(task) { const execution = logWriteChain.then(task, task); logWriteChain = execution.catch(() => {}); return execution; }
 async function pruneLogs() { return serializeLogWrite(async () => { const records = await readLogs(); const boundary = Date.now() - retentionDays * 86400000; const retained = Number.isFinite(retentionDays) && retentionDays > 0 ? records.filter(record => new Date(record.createdAt).getTime() >= boundary) : records; const kept = retained.slice(-maxLogRecords); if (kept.length !== records.length) await writeLogs(kept); }); }
-function filters(query) { return { route: safeText(query.route, 180), referrer: safeText(query.referrer, 250), from: validDate(query.from), to: validDate(query.to) }; }
+function pageNumber(value) { const page = Number.parseInt(safeText(value, 8), 10); return Number.isSafeInteger(page) && page > 0 ? page : 1; }
+function filters(query) { return { route: safeText(query.route, 180), referrer: safeText(query.referrer, 250), from: validDate(query.from), to: validDate(query.to), page: pageNumber(query.page) }; }
 function filtered(records, filter) { return records.filter(record => { const time = new Date(record.createdAt).getTime(); return (!filter.route || record.route.includes(filter.route)) && (!filter.referrer || record.referrer.includes(filter.referrer)) && (!filter.from || time >= new Date(`${filter.from}T00:00:00`).getTime()) && (!filter.to || time <= new Date(`${filter.to}T23:59:59.999`).getTime()); }).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)); }
 function rows(records) { return records.map(record => ({ Fecha: record.createdAt, Ruta: record.route, Referrer: record.referrer || '', 'IP (enmascarada)': record.ipMasked, Idioma: record.language || '', 'Zona horaria': record.timezone || '', Pantalla: record.screen || '', 'User-Agent': record.userAgent || '' })); }
 function asTxt(data) { const headers = ['Fecha', 'Ruta', 'Referrer', 'IP (enmascarada)', 'Idioma', 'Zona horaria']; const cells = data.map(row => headers.map(header => String(row[header] || '').replace(/[\r\n]/g, ' '))); const widths = headers.map((header, index) => Math.min(34, Math.max(header.length, ...cells.map(row => row[index].length)))); const line = `+${widths.map(width => '-'.repeat(width + 2)).join('+')}+`; const draw = row => `|${row.map((cell,index) => ` ${cell.slice(0,widths[index]).padEnd(widths[index])} `).join('|')}|`; return [line, draw(headers), line, ...cells.map(draw), line].join('\n'); }
@@ -111,7 +113,7 @@ app.get('/', (_request, response) => response.sendFile(path.join(root, 'index.ht
 app.get('/privacidad', (_request, response) => response.sendFile(path.join(root, 'public', 'privacy.html')));
 app.get('/admin/blog', admin, async (request, response, next) => {
   try {
-    const posts = await readBlogPosts(root);
+    const posts = await readBlogPosts(storageRoot);
     const draft = posts.find(post => post.id === safeText(request.query.edit, 80)) || { id:'', title:'', category:'', excerpt:'', body:'', publishedAt:nowDate(), published:false };
     response.type('html').send(blogPanel(posts, draft, safeText(request.query.ok, 120)));
   } catch (error) { next(error); }
@@ -119,19 +121,19 @@ app.get('/admin/blog', admin, async (request, response, next) => {
 app.post('/admin/blog', admin, sameOrigin, async (request, response, next) => {
   try {
     await serializeBlogWrite(async () => {
-      const posts = await readBlogPosts(root);
+      const posts = await readBlogPosts(storageRoot);
       const id = safeText(request.body.id, 80);
       const index = posts.findIndex(post => post.id === id);
       const post = normalizeBlogPost(request.body, index >= 0 ? posts[index] : {}, posts);
       if (index >= 0) posts[index] = post; else posts.push(post);
-      await writeBlogPosts(root, posts);
+      await writeBlogPosts(storageRoot, posts);
     });
     response.redirect(303, '/admin/blog?ok=Publicación guardada.');
   } catch (error) { response.status(400).type('html').send(`<p>No se pudo guardar: ${escapeHtml(error.message)}</p><p><a href="/admin/blog">Volver al blog</a></p>`); }
 });
 app.post('/admin/blog/:id/delete', admin, sameOrigin, async (request, response, next) => {
   try {
-    await serializeBlogWrite(async () => { const posts = await readBlogPosts(root); await writeBlogPosts(root, posts.filter(post => post.id !== safeText(request.params.id, 80))); });
+    await serializeBlogWrite(async () => { const posts = await readBlogPosts(storageRoot); await writeBlogPosts(storageRoot, posts.filter(post => post.id !== safeText(request.params.id, 80))); });
     response.redirect(303, '/admin/blog?ok=Publicación eliminada.');
   } catch (error) { next(error); }
 });
@@ -152,13 +154,13 @@ app.post('/api/log-404', sameOrigin, async (request, response) => {
 });
 app.get('/admin/errores', admin, async (request, response, next) => {
   try {
-    const filter = filters(request.query); const records = filtered(await readLogs(), filter); const query = new URLSearchParams(Object.entries(filter).filter(([,value]) => value)).toString(); const body = records.map(record => `<tr><td>${escapeHtml(new Date(record.createdAt).toLocaleString('es-PY'))}</td><td>${escapeHtml(record.route)}</td><td>${escapeHtml(record.referrer || '-')}</td><td>${escapeHtml(record.ipMasked)}</td><td>${escapeHtml(record.language || '-')}</td><td>${escapeHtml(record.userAgent || '-')}</td></tr>`).join('') || '<tr><td colspan="6">Sin registros con estos filtros.</td></tr>';
-    response.type('html').send(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Panel de errores 404</title><style>body{font:15px Arial,sans-serif;max-width:1280px;margin:32px auto;padding:0 18px;color:#17211c;background:#f6f7f4}h1{margin-bottom:4px}.meta{color:#536057}.filters,.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:end;background:#fff;padding:16px;border:1px solid #d5d9d2;margin:18px 0}.filters label{display:grid;gap:4px;font-size:12px;font-weight:bold}.filters input{padding:8px;border:1px solid #aab3aa;border-radius:3px}.button{border:1px solid #1e3128;background:#1e3128;color:white;padding:9px 12px;text-decoration:none;border-radius:3px;cursor:pointer}.button.alt{background:#fff;color:#1e3128}.table-wrap{overflow:auto;background:#fff;border:1px solid #d5d9d2}table{border-collapse:collapse;width:100%;min-width:850px}th,td{padding:10px;text-align:left;border-bottom:1px solid #e3e6e1;vertical-align:top}th{background:#1e3128;color:#fff}td:last-child{max-width:350px;word-break:break-word}</style></head><body><h1>Registros de errores 404</h1><p class="meta">${records.length} registro(s). IP enmascarada y hash técnico; la retención se controla desde variables de entorno.</p><form class="filters" method="get"><label>Ruta<input name="route" value="${escapeHtml(filter.route)}"></label><label>Referrer<input name="referrer" value="${escapeHtml(filter.referrer)}"></label><label>Desde<input type="date" name="from" value="${escapeHtml(filter.from)}"></label><label>Hasta<input type="date" name="to" value="${escapeHtml(filter.to)}"></label><button class="button" type="submit">Filtrar</button><a class="button alt" href="/admin/errores">Limpiar</a></form><div class="actions"><strong>Exportar los registros filtrados:</strong><a class="button" href="/admin/errores/export?format=xlsx&${query}">Excel (.xlsx)</a><a class="button" href="/admin/errores/export?format=pdf&${query}">PDF</a><a class="button" href="/admin/errores/export?format=csv&${query}">CSV</a><a class="button" href="/admin/errores/export?format=txt&${query}">TXT (tabla)</a></div><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Ruta</th><th>Referrer</th><th>IP</th><th>Idioma</th><th>User-Agent</th></tr></thead><tbody>${body}</tbody></table></div></body></html>`);
+    const filter = filters(request.query); const { page, ...criteria } = filter; const records = filtered(await readLogs(), criteria); const pageSize = 100; const pages = Math.max(1, Math.ceil(records.length / pageSize)); const currentPage = Math.min(page, pages); const visibleRecords = records.slice((currentPage - 1) * pageSize, currentPage * pageSize); const query = new URLSearchParams(Object.entries(criteria).filter(([,value]) => value)).toString(); const pageUrl = target => `/admin/errores?${new URLSearchParams({ ...criteria, page: String(target) }).toString()}`; const body = visibleRecords.map(record => `<tr><td>${escapeHtml(new Date(record.createdAt).toLocaleString('es-PY'))}</td><td>${escapeHtml(record.route)}</td><td>${escapeHtml(record.referrer || '-')}</td><td>${escapeHtml(record.ipMasked)}</td><td>${escapeHtml(record.language || '-')}</td><td>${escapeHtml(record.userAgent || '-')}</td></tr>`).join('') || '<tr><td colspan="6">Sin registros con estos filtros.</td></tr>'; const pagination = pages > 1 ? `<nav class="pagination" aria-label="Paginación de registros">${currentPage > 1 ? `<a class="button alt" href="${pageUrl(currentPage - 1)}">← Anterior</a>` : ''}<span>Página ${currentPage} de ${pages}</span>${currentPage < pages ? `<a class="button alt" href="${pageUrl(currentPage + 1)}">Siguiente →</a>` : ''}</nav>` : '';
+    response.type('html').send(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Panel de errores 404</title><style>body{font:15px Arial,sans-serif;max-width:1280px;margin:32px auto;padding:0 18px;color:#17211c;background:#f6f7f4}h1{margin-bottom:4px}.meta{color:#536057}.filters,.actions,.pagination{display:flex;flex-wrap:wrap;gap:12px;align-items:end;background:#fff;padding:16px;border:1px solid #d5d9d2;margin:18px 0}.pagination{justify-content:space-between;align-items:center}.filters label{display:grid;gap:4px;font-size:12px;font-weight:bold}.filters input{padding:8px;border:1px solid #aab3aa;border-radius:3px}.button{border:1px solid #1e3128;background:#1e3128;color:white;padding:9px 12px;text-decoration:none;border-radius:3px;cursor:pointer}.button.alt{background:#fff;color:#1e3128}.table-wrap{overflow:auto;background:#fff;border:1px solid #d5d9d2}table{border-collapse:collapse;width:100%;min-width:850px}th,td{padding:10px;text-align:left;border-bottom:1px solid #e3e6e1;vertical-align:top}th{background:#1e3128;color:#fff}td:last-child{max-width:350px;word-break:break-word}</style></head><body><h1>Registros de errores 404</h1><p class="meta">${records.length} registro(s); mostrando ${visibleRecords.length}. IP enmascarada y hash técnico; la retención se controla desde variables de entorno.</p><form class="filters" method="get"><label>Ruta<input name="route" value="${escapeHtml(filter.route)}"></label><label>Referrer<input name="referrer" value="${escapeHtml(filter.referrer)}"></label><label>Desde<input type="date" name="from" value="${escapeHtml(filter.from)}"></label><label>Hasta<input type="date" name="to" value="${escapeHtml(filter.to)}"></label><button class="button" type="submit">Filtrar</button><a class="button alt" href="/admin/errores">Limpiar</a></form><div class="actions"><strong>Exportar los registros filtrados:</strong><a class="button" href="/admin/errores/export?format=xlsx&${query}">Excel (.xlsx)</a><a class="button" href="/admin/errores/export?format=pdf&${query}">PDF</a><a class="button" href="/admin/errores/export?format=csv&${query}">CSV</a><a class="button" href="/admin/errores/export?format=txt&${query}">TXT (tabla)</a></div>${pagination}<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Ruta</th><th>Referrer</th><th>IP</th><th>Idioma</th><th>User-Agent</th></tr></thead><tbody>${body}</tbody></table></div></body></html>`);
   } catch (error) { next(error); }
 });
 app.get('/admin/errores/export', admin, async (request, response, next) => {
   try {
-    const format = safeText(request.query.format, 8).toLowerCase(); const data = rows(filtered(await readLogs(), filters(request.query))); const name = `errores-404-${nowDate()}`; const headers = Object.keys(data[0] || { Fecha:'', Ruta:'', Referrer:'', 'IP (enmascarada)':'', Idioma:'', 'Zona horaria':'', Pantalla:'', 'User-Agent':'' });
+    const format = safeText(request.query.format, 8).toLowerCase(); const { page: _page, ...criteria } = filters(request.query); const data = rows(filtered(await readLogs(), criteria)); const name = `errores-404-${nowDate()}`; const headers = Object.keys(data[0] || { Fecha:'', Ruta:'', Referrer:'', 'IP (enmascarada)':'', Idioma:'', 'Zona horaria':'', Pantalla:'', 'User-Agent':'' });
     if (format === 'csv') return response.attachment(`${name}.csv`).type('text/csv').send(`\uFEFF${[headers,...data.map(row=>headers.map(header=>row[header]))].map(row=>row.map(csvCell).join(',')).join('\n')}`);
     if (format === 'txt') return response.attachment(`${name}.txt`).type('text/plain').send(asTxt(data));
     if (format === 'xlsx') { const book = new ExcelJS.Workbook(); const sheet = book.addWorksheet('Errores 404'); sheet.columns=headers.map(header=>({header,key:header,width:Math.min(45,Math.max(14,header.length+4))})); data.forEach(row=>sheet.addRow(Object.fromEntries(headers.map(header => [header, neutralizeSpreadsheetFormula(row[header])])))); sheet.getRow(1).font={bold:true}; sheet.autoFilter=`A1:${String.fromCharCode(64+headers.length)}1`; response.attachment(`${name}.xlsx`).type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); await book.xlsx.write(response); return response.end(); }

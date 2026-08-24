@@ -3,3 +3,4 @@ dist/
 .env
 data/404-errors.json
 data/404-errors.json.tmp
+data/blog-backups/
