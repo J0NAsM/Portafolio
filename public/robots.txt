@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://jonasemanuel.dev/sitemap.xml
+Sitemap: https://j0nasm.github.io/portafolio/sitemap.xml

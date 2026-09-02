@@ -23,7 +23,7 @@ npm start
 
 Requiere Node.js 20.19 o superior (se recomienda la versión 22 indicada en `.nvmrc`). `npm ci` instala exactamente las dependencias bloqueadas en `package-lock.json`; utiliza `npm install` solo cuando vayas a modificar dependencias.
 
-El build estático queda en `dist/` y conserva los archivos HTML, CSS y JavaScript clásicos para abrirse sin bundler. Para un hosting estático con rutas SPA, configura una regla de fallback a `index.html`.
+El build estático queda en `dist/` y conserva los archivos HTML, CSS y JavaScript clásicos sin bundler. También agrega la base de rutas de producción, genera entradas para las rutas públicas, el fallback SPA de GitHub Pages, `.nojekyll`, `robots.txt` y `sitemap.xml` en la raíz publicada. El archivo fuente `index.html` sigue pudiendo abrirse directamente.
 
 ## Contenido y configuración
 
@@ -31,7 +31,7 @@ Edita `src/data.js`. Allí se concentran el perfil, enlaces sociales, proyectos,
 
 - Añade email, GitHub, LinkedIn, WhatsApp y CV únicamente cuando estén disponibles.
 - Para agregar un proyecto, duplica un objeto de `projects` y define un `slug` único.
-- Define el dominio definitivo antes de publicar: configura la URL canónica, `public/robots.txt` y `public/sitemap.xml` con la misma dirección. No uses el dominio de ejemplo.
+- El dominio de publicación configurado es `https://j0nasm.github.io/portafolio/`.
 - Puedes incorporar fotografía o capturas sanitizadas en `public/` y enlazarlas desde el contenido. No incluyas datos privados, clientes, credenciales ni capturas operativas sin anonimizar.
 
 ## Rutas
@@ -68,8 +68,10 @@ Cada push y pull request a `main` ejecuta en GitHub Actions la instalación repr
 
 ## Deploy
 
-Para mostrar solo el portfolio, puedes ejecutar `npm run build` y publicar `dist/` en un host estático. El panel de errores y las exportaciones requieren un entorno Node.js que ejecute `server.js`; no estarán disponibles en un deploy estrictamente estático. Habilita fallback SPA para las rutas internas.
+Cada `push` a `main` ejecuta pruebas, construye `dist/`, verifica las rutas de producción y despliega automáticamente mediante `.github/workflows/deploy.yml`. El repositorio es `J0NAsM/Portafolio`, se publica bajo `/portafolio/` y Pages debe usar **GitHub Actions** como fuente.
 
-Antes de producción, confirma que el dominio configurado en `public/robots.txt` y `public/sitemap.xml` sea el definitivo, habilita HTTPS y define las variables de `.env` únicamente en el proveedor de hosting. No subas `.env`, la carpeta `data/` ni sus registros.
+El panel privado de errores, la edición web del blog y las exportaciones requieren un entorno Node.js que ejecute `server.js`; no están incluidos en GitHub Pages. Las publicaciones ya guardadas en `content/blog-posts.json` sí se incorporan al build estático.
+
+GitHub Pages habilita HTTPS para el dominio `github.io`. No subas `.env`, la carpeta `data/` ni sus registros.
 
 Consulta `docs/deployment.md` para publicar una versión estática o el servidor Node.js, `docs/prepublish-checklist.md` antes de hacerlo y `CONTRIBUTING.md` para las convenciones de mantenimiento.

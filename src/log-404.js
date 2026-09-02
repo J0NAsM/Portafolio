@@ -1,5 +1,5 @@
 (() => {
-  if (location.protocol === 'file:') return;
+  if (location.protocol === 'file:' || location.hostname === 'j0nasm.github.io') return;
 
   const payload = {
     route: `${location.pathname}${location.search}${location.hash}`,

@@ -75,7 +75,8 @@ try {
   assert.match(backups, /Publicación de prueba/);
   console.log('Integración verificada: servidor, autenticación, CSRF, registros, exportación, blog y respaldo.');
 } finally {
+  const serverExit = server.exitCode === null ? once(server, 'exit') : Promise.resolve();
   if (!server.killed) server.kill();
-  await once(server, 'exit').catch(() => {});
+  await serverExit.catch(() => {});
   await rm(storageRoot, { recursive: true, force: true });
 }

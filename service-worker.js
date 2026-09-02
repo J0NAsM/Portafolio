@@ -1,7 +1,9 @@
-const CACHE_NAME = 'jonas-portfolio-v1';
+const CACHE_NAME = 'jonas-portfolio-v3';
+const BASE_PATH = new URL('./', self.location.href).pathname;
+const fromBase = path => `${BASE_PATH}${path}`;
 const APP_SHELL = [
-  '/', '/index.html', '/404.html', '/src/data.js', '/src/main.js', '/src/styles.css', '/src/visual-evidence.css', '/src/blog.css', '/src/visual-system.css', '/src/improvements.css', '/src/showcase.css', '/src/loading.css', '/src/log-404.js', '/public/blog-posts.js', '/public/favicon.svg', '/public/site.webmanifest', '/public/privacy.html', '/public/images/general/profile-placeholder.webp'
-];
+  '', 'index.html', '404.html', 'src/data.js', 'src/main.js', 'src/styles.css', 'src/visual-evidence.css', 'src/blog.css', 'src/visual-system.css', 'src/improvements.css', 'src/showcase.css', 'src/loading.css', 'src/log-404.js', 'public/blog-posts.js', 'public/favicon.svg', 'public/site.webmanifest', 'public/privacy.html', 'public/images/general/profile-placeholder.webp'
+].map(fromBase);
 
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim())));
@@ -13,5 +15,5 @@ self.addEventListener('fetch', event => {
       caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
     }
     return response;
-  }).catch(() => event.request.mode === 'navigate' ? caches.match('/index.html') : caches.match('/404.html'))));
+  }).catch(() => event.request.mode === 'navigate' ? caches.match(fromBase('index.html')) : caches.match(fromBase('404.html'))));
 });

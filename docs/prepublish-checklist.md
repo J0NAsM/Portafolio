@@ -10,9 +10,9 @@
 ## Técnica
 
 - [ ] Ejecuté `npm ci && npm run build && npm test`.
-- [ ] El dominio definitivo aparece en `public/robots.txt` y `public/sitemap.xml`.
-- [ ] El hosting redirige las rutas de la SPA a `index.html`.
-- [ ] HTTPS está activo y las variables de `.env` están configuradas solo en el hosting.
+- [x] El dominio definitivo aparece en los metadatos, `public/robots.txt` y `public/sitemap.xml`.
+- [x] El build genera entradas de rutas y fallback SPA para GitHub Pages.
+- [ ] GitHub Pages está configurado con **GitHub Actions** como fuente y HTTPS está activo.
 - [ ] Si se usa el servidor Node.js, el directorio `data/` es persistente y no se sincroniza con Git.
 
 ## Revisión final

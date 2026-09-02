@@ -1,8 +1,10 @@
-const { profile, services, projects, skills, experience } = window.portfolioData;
+const { profile, services, projects, skills, experience, education } = window.portfolioData;
 const blogPosts = Array.isArray(window.portfolioBlogPosts) ? window.portfolioBlogPosts : [];
 const app = document.querySelector('#app');
 const storageGet = key => { try { return localStorage.getItem(key); } catch { return null; } };
 const storageSet = (key, value) => { try { localStorage.setItem(key, value); } catch {} };
+const productionOrigin = 'https://j0nasm.github.io';
+const siteBase = '/portafolio';
 
 let theme = storageGet('theme') || 'system';
 let menuOpen = false;
@@ -13,8 +15,20 @@ let focusTarget = '';
 let shouldScrollToTop = false;
 
 const isLocalFile = location.protocol === 'file:';
-const currentPath = () => isLocalFile ? (location.hash.slice(1) || '/') : (location.pathname.replace(/\/$/, '') || '/');
-const internal = path => `data-route="${path}" href="${isLocalFile ? `#${path}` : path}"`;
+if (!isLocalFile) {
+  try {
+    const redirectedPath = sessionStorage.getItem('portfolio-redirect');
+    sessionStorage.removeItem('portfolio-redirect');
+    if (redirectedPath?.startsWith(`${siteBase}/`) && !redirectedPath.startsWith('//')) history.replaceState({}, '', redirectedPath);
+  } catch {}
+}
+const currentPath = () => {
+  if (isLocalFile) return location.hash.slice(1) || '/';
+  const pathname = location.pathname.startsWith(siteBase) ? location.pathname.slice(siteBase.length) : location.pathname;
+  return pathname.replace(/\/$/, '') || '/';
+};
+const publicPath = path => path === '/' ? `${siteBase}/` : `${siteBase}${path}`;
+const internal = path => `data-route="${path}" href="${isLocalFile ? `#${path}` : publicPath(path)}"`;
 const icon = name => ({ arrow: '→', close: '×', sun: '☼', moon: '◐' }[name] || '•');
 const status = value => `<span class="status">${value}</span>`;
 const escapeHtml = value => String(value || '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
@@ -32,7 +46,7 @@ function enableOfflineExperience() {
   updateConnectionStatus();
   addEventListener('online', updateConnectionStatus);
   addEventListener('offline', updateConnectionStatus);
-  if (!isLocalFile && 'serviceWorker' in navigator) navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+  if (!isLocalFile && 'serviceWorker' in navigator) navigator.serviceWorker.register(`${siteBase}/service-worker.js`).catch(() => {});
 }
 
 function setMeta(title, description) {
@@ -42,6 +56,11 @@ function setMeta(title, description) {
   document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
   document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
   document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
+  if (!isLocalFile) {
+    const canonicalUrl = `${productionOrigin}${publicPath(currentPath())}`;
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonicalUrl);
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', canonicalUrl);
+  }
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', document.documentElement.dataset.theme === 'dark' ? '#101514' : '#f5f5ef');
 }
 
@@ -79,7 +98,7 @@ function nav() {
 }
 
 function footer() {
-  return `<footer><span>© ${new Date().getFullYear()} ${profile.name}</span><span>Software para procesos reales.</span><a href="${isLocalFile ? 'public/privacy.html' : '/privacidad'}">Privacidad</a>${socialLinks()}</footer>`;
+  return `<footer><span>© ${new Date().getFullYear()} ${profile.name}</span><span>Software para procesos reales.</span><a href="${isLocalFile ? 'public/privacy.html' : `${siteBase}/privacidad/`}">Privacidad</a>${socialLinks()}</footer>`;
 }
 
 const sectionTitle = (eyebrow, title, text = '') => `<div class="section-title"><p class="eyebrow">${eyebrow}</p><h2>${title}</h2>${text ? `<p>${text}</p>` : ''}</div>`;
@@ -126,7 +145,7 @@ function home() {
     <div class="demo-notice" role="note"><span>Modo demostración</span><p>Las interfaces visuales de esta versión son simulaciones para evaluar diseño, jerarquía y contraste. Se reemplazarán por evidencia real cuando esté disponible.</p><a ${internal('/muestras')}>Ver todas las muestras →</a></div>
     <section class="hero recruiter-hero">
       <div class="hero-copy"><p class="eyebrow">${profile.role}</p><h1>Analizo problemas.<br><em>Diseño sistemas.</em><br>Construyo soluciones.</h1><p class="role-focus">${profile.focus}</p><p class="lede">${profile.summary}</p><div class="actions">${cta('Ver proyectos', '/proyectos')}${cta('Ver experiencia', '/experiencia', 'secondary')}</div></div>
-      <aside class="hero-proof" aria-label="Resumen profesional"><p class="eyebrow">Perfil en una mirada</p><dl><div><dt>Enfoque</dt><dd>Sistemas para procesos reales</dd></div><div><dt>Dominios</dt><dd>Fintech · Operaciones · Gestión institucional</dd></div><div><dt>Base técnica</dt><dd>Java · Python · SQL · React</dd></div></dl><p>El alcance público se presenta sin revelar datos operativos, código propietario ni credenciales.</p></aside>
+      <aside class="hero-proof" aria-label="Resumen profesional"><p class="eyebrow">Perfil en una mirada</p><dl><div><dt>Enfoque</dt><dd>Desarrollo de software con IA aplicada</dd></div><div><dt>Dominios</dt><dd>Fintech · Operaciones · Gestión institucional</dd></div><div><dt>Disponibilidad</dt><dd>${profile.availability}</dd></div></dl><p>El alcance público se presenta sin revelar datos operativos, código propietario ni credenciales.</p></aside>
     </section>
     <section class="visual-overview"><div><p class="eyebrow">Cómo abordo un sistema</p><h2>La imagen explica el método; el texto aporta el contexto.</h2><p>Desde la necesidad real hasta una solución que se pueda operar, las decisiones conectan personas, reglas, datos y uso.</p></div>${visualFigure('Mapa conceptual', 'portfolio-lens.svg', 'Mapa conceptual: contexto, reglas, datos y uso forman una solución operable.', 'Representación de enfoque profesional, no arquitectura interna.')}</section>
     <section class="evidence-strip">${domains.map(([title, text], index) => `<article><span>0${index + 1}</span><h2>${title}</h2><p>${text}</p></article>`).join('')}</section>
@@ -163,7 +182,7 @@ function experiencePage() {
 }
 
 function educationPage() {
-  return `<main id="main" class="page"><div class="page-intro narrow">${sectionTitle('Formación', 'Aprender para modelar sistemas mejores.', 'La formación principal se complementa con práctica en proyectos, documentación y exploración tecnológica.')}<section class="education"><p class="eyebrow">Formación principal</p><h2>Análisis de Sistemas Informáticos</h2><p>Base para analizar requerimientos, modelar información, entender procesos y traducirlos en soluciones de software.</p></section><section class="principles"><p class="eyebrow">Aprendizaje continuo</p>${['Arquitectura y diseño de sistemas', 'Bases de datos y reglas de negocio', 'IA aplicada al desarrollo', 'Documentación y gestión de conocimiento'].map((item, index) => `<div><span>0${index + 1}</span><h2>${item}</h2></div>`).join('')}</section></div></main>`;
+  return `<main id="main" class="page"><div class="page-intro narrow">${sectionTitle('Formación', 'Aprender para modelar sistemas mejores.', 'Formación escolar, técnica y superior complementada con práctica en proyectos y aprendizaje continuo.')}<div class="timeline education-timeline">${education.map(([level, title, detail, location]) => `<article><span>${level}</span><div><h2>${title}</h2><p>${detail}</p><small>${location}</small></div></article>`).join('')}</div><section class="principles"><p class="eyebrow">Aprendizaje continuo</p>${['Arquitectura y diseño de sistemas', 'Bases de datos y reglas de negocio', 'IA aplicada al desarrollo', 'Documentación y gestión de conocimiento'].map((item, index) => `<div><span>0${index + 1}</span><h2>${item}</h2></div>`).join('')}</section></div></main>`;
 }
 
 function stackPage() {
@@ -172,12 +191,11 @@ function stackPage() {
 
 function cvPage() {
   const field = (key, value, label) => `<span class="cv-field" contenteditable="true" role="textbox" aria-label="${label}" data-cv-field="${key}">${value}</span>`;
-  return `<main id="main" class="page cv-page"><div class="cv-toolbar no-print">${sectionTitle('CV ATS', 'Un CV simple, legible y preparado para completar.', 'Esta versión evita columnas, tablas, íconos y gráficos. Completa los campos entre corchetes con información verificable antes de imprimir o guardar como PDF.')}<div class="cv-actions"><button class="button" type="button" data-print-cv>Imprimir CV <span>→</span></button></div><p class="ats-note"><strong>Uso recomendado:</strong> adapta las competencias y viñetas a una oferta concreta, usando únicamente palabras clave y resultados que puedas demostrar.</p></div><article class="cv-document" aria-label="Currículum ATS imprimible"><header><h1>${profile.name}</h1><p>${field('city', profile.location, 'Ciudad y país')} | ${field('phone', '+595 986 914726', 'Teléfono')} | ${field('email', profile.email, 'Email profesional')}</p><p>LinkedIn: ${field('linkedin', '[Pendiente]', 'LinkedIn')} | GitHub: ${field('github', profile.github.replace('https://', ''), 'GitHub')}</p></header><section><h2>PERFIL PROFESIONAL</h2><p>Desarrollador Junior orientado al desarrollo de software y al análisis de procesos empresariales. Experiencia práctica en sistemas con reglas de negocio, datos, flujos operativos, frontend y experiencia de usuario.</p></section><section><h2>COMPETENCIAS CLAVE</h2><p><strong>Desarrollo:</strong> Python, Java, JavaScript, PHP, HTML, CSS y APIs.</p><p><strong>Datos:</strong> SQL, PostgreSQL, MySQL, SQLite, modelado y consulta de datos.</p><p><strong>Sistemas:</strong> análisis de sistemas, reglas de negocio, flujos de autorización, facturación electrónica y procesos transaccionales.</p><p><strong>Herramientas:</strong> Git, GitHub, DBeaver, GeneXus, documentación técnica e IA aplicada al desarrollo.</p></section><section><h2>EXPERIENCIA LABORAL</h2><div class="cv-entry"><p><strong>Softshop</strong> | Carapeguá, Paraguay</p><p><strong>Desarrollador Junior</strong> | 2025 – Actualidad</p><p>• Desarrollo de sistemas, con IA como herramienta de apoyo y foco en frontend y experiencia de usuario.</p><p>• Participación en la implementación de facturación electrónica SIFEN, sin exponer información privada.</p><p class="cv-field" contenteditable="true" role="textbox" aria-label="Responsabilidad verificable en Softshop" data-cv-field="softshop-bullet">• [Agrega una responsabilidad, módulo o resultado verificable.]</p></div></section><section><h2>EDUCACIÓN</h2><p><strong>Análisis de Sistemas Informáticos</strong> | ${field('institution', '[Institución]', 'Institución educativa')} | ${field('education-date', '[Año de inicio] – [Año de finalización o Actualidad]', 'Periodo educativo')}</p></section><section><h2>IDIOMAS Y CERTIFICACIONES</h2><p><strong>Nacionalidad:</strong> Paraguaya</p><p><strong>Idiomas:</strong> ${field('languages', '[Idioma] ([Nivel CEFR: A1–C2])', 'Idiomas y niveles')}</p><p><strong>Certificaciones:</strong> ${field('certifications', '[Agregar solo certificaciones verificables]', 'Certificaciones')}</p></section></article></main>`;
+  return `<main id="main" class="page cv-page"><div class="cv-toolbar no-print">${sectionTitle('CV ATS', 'Un CV simple, legible y preparado para completar.', 'Esta versión evita columnas, tablas, íconos y gráficos. Completa los campos entre corchetes con información verificable antes de imprimir o guardar como PDF.')}<div class="cv-actions"><button class="button" type="button" data-print-cv>Imprimir CV <span>→</span></button></div><p class="ats-note"><strong>Uso recomendado:</strong> adapta las competencias y viñetas a una oferta concreta, usando únicamente palabras clave y resultados que puedas demostrar.</p></div><article class="cv-document" aria-label="Currículum ATS imprimible"><header><h1>${profile.name}</h1><p>${field('city', profile.location, 'Ciudad y país')} | ${field('phone', profile.phone, 'Teléfono')} | ${field('email', profile.email, 'Email profesional')}</p><p>GitHub: ${field('github', profile.github.replace('https://', ''), 'GitHub')} | Disponibilidad: ${profile.availability}</p></header><section><h2>PERFIL PROFESIONAL</h2><p>Desarrollador Junior orientado al desarrollo de software con IA aplicada y al análisis de procesos empresariales. Experiencia práctica en sistemas con reglas de negocio, datos, flujos operativos, frontend y experiencia de usuario.</p></section><section><h2>COMPETENCIAS CLAVE</h2><p><strong>Desarrollo:</strong> Python, Java, JavaScript, PHP, HTML, CSS y APIs.</p><p><strong>Datos:</strong> SQL, PostgreSQL, MySQL, SQLite, modelado y consulta de datos.</p><p><strong>Sistemas:</strong> análisis de sistemas, reglas de negocio, flujos de autorización, facturación electrónica y procesos transaccionales.</p><p><strong>Herramientas:</strong> Git, GitHub, DBeaver, GeneXus, documentación técnica e IA aplicada al desarrollo.</p></section><section><h2>EXPERIENCIA</h2><div class="cv-entry"><p><strong>Softshop</strong> | Carapeguá, Paraguay</p><p><strong>Desarrollador Junior</strong> | 2025 – Actualidad</p><p>• Desarrollo de sistemas, con IA como herramienta de apoyo y foco en frontend y experiencia de usuario.</p><p>• Participación en la implementación de facturación electrónica SIFEN, sin exponer información privada.</p><p class="cv-field" contenteditable="true" role="textbox" aria-label="Responsabilidad verificable en Softshop" data-cv-field="softshop-bullet">• [Agrega una responsabilidad, módulo o resultado verificable.]</p></div><div class="cv-entry"><p><strong>Cuerpo de Bomberos Voluntarios de Carapeguá</strong></p><p><strong>Bombero Voluntario Combatiente · Cabo</strong></p><p>• Servicio voluntario, coordinación operativa, disciplina y trabajo en equipo.</p></div></section><section><h2>EDUCACIÓN</h2><p><strong>Análisis de Sistemas Informáticos</strong> | ${field('systems-institution', '[Institución y periodo pendientes]', 'Institución y periodo de Análisis de Sistemas')}</p><p><strong>Psicología</strong> | ${field('psychology-institution', '[Institución y periodo pendientes]', 'Institución y periodo de Psicología')}</p><p><strong>Bachillerato Técnico en Informática</strong> | Colegio Privado Subvencionado San Alfonso | Carapeguá, Paraguay</p></section><section><h2>IDIOMAS</h2><p>Español: nativo | Guaraní: nativo | Portugués: comprensión básica | Inglés: comprensión básica</p></section></article></main>`;
 }
 
 function contact() {
-  const channels = [profile.email && `<a class="button" href="mailto:${profile.email}">Escribir un email <span>→</span></a>`, socialLinks()].filter(Boolean).join('');
-  return `<main id="main" class="page contact-page"><div class="page-intro narrow">${sectionTitle('Contacto', 'Hablemos de un problema que valga la pena ordenar.')}<div class="contact-card"><span class="contact-symbol">↗</span><h2>Canales profesionales</h2>${channels || '<p>Los canales de contacto se incorporarán cuando estén disponibles.</p>'}</div></div></main>`;
+  return `<main id="main" class="page contact-page"><div class="page-intro narrow">${sectionTitle('Contacto', 'Hablemos de un problema que valga la pena ordenar.', `Disponibilidad laboral: ${profile.availability}.`)}<div class="contact-options"><article class="contact-card"><span class="contact-symbol">↗</span><p class="eyebrow">WhatsApp</p><h2>${profile.phone}</h2><p>Abre una conversación con un mensaje profesional preparado.</p><div class="contact-actions"><a class="button" href="${profile.whatsapp}" target="_blank" rel="noreferrer">Enviar mensaje <span>→</span></a><button class="button secondary" type="button" data-copy-contact="${profile.phone}" data-copy-label="número de WhatsApp">Copiar número</button></div></article><article class="contact-card"><span class="contact-symbol">@</span><p class="eyebrow">Email</p><h2>${profile.email}</h2><p>Abre tu aplicación de correo con asunto y mensaje formal preparados.</p><div class="contact-actions"><a class="button" href="${profile.emailDraft}">Redactar email <span>→</span></a><button class="button secondary" type="button" data-copy-contact="${profile.email}" data-copy-label="email">Copiar email</button></div></article></div><p class="copy-status" data-copy-status role="status" aria-live="polite"></p></div></main>`;
 }
 
 function notFound() {
@@ -256,7 +274,7 @@ function go(path) {
   focusTarget = 'main';
   shouldScrollToTop = true;
   if (isLocalFile) location.hash = path;
-  else { history.pushState({}, '', path); render(); }
+  else { history.pushState({}, '', publicPath(path)); render(); }
 }
 
 function bind() {
@@ -278,6 +296,25 @@ function bind() {
     document.querySelectorAll('.palette button').forEach(button => { button.hidden = !button.textContent.toLowerCase().includes(query); });
   });
   document.querySelector('[data-print-cv]')?.addEventListener('click', () => window.print());
+  document.querySelectorAll('[data-copy-contact]').forEach(button => button.addEventListener('click', async () => {
+    const value = button.dataset.copyContact || '';
+    const status = document.querySelector('[data-copy-status]');
+    try {
+      await navigator.clipboard.writeText(value);
+      if (status) status.textContent = `Se copió el ${button.dataset.copyLabel} al portapapeles.`;
+    } catch {
+      const field = document.createElement('textarea');
+      field.value = value;
+      field.setAttribute('readonly', '');
+      field.style.position = 'fixed';
+      field.style.opacity = '0';
+      document.body.append(field);
+      field.select();
+      const copied = document.execCommand('copy');
+      field.remove();
+      if (status) status.textContent = copied ? `Se copió el ${button.dataset.copyLabel} al portapapeles.` : `No se pudo copiar. Selecciona manualmente: ${value}`;
+    }
+  }));
   document.querySelectorAll('[data-cv-field]').forEach(field => {
     const key = `cv-${field.dataset.cvField}`;
     const saved = storageGet(key);

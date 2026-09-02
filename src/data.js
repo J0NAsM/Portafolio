@@ -3,13 +3,28 @@ const profile = {
   name: 'Jonas Emanuel Martínez Cáceres',
   shortName: 'Jonas Martínez',
   role: 'Desarrollador Junior · Software e IA aplicada',
-  focus: 'Python · JavaScript · Sistemas empresariales · Experiencia de usuario',
+  focus: 'Desarrollo asistido por IA · Sistemas empresariales · Experiencia de usuario',
   tagline: 'Analizo problemas. Diseño sistemas. Construyo soluciones.',
   summary: 'Desarrollo sistemas con Python, Java, JavaScript, PHP y tecnologías web. Uso la IA como herramienta de apoyo para analizar, construir y mejorar soluciones, con foco en procesos reales y experiencia de usuario.',
   location: 'Carapeguá, Paraguay',
   nationality: 'Paraguaya',
-  email: 'jemc2612@gmail.com', github: 'https://github.com/J0NAsM', linkedin: '', whatsapp: 'https://wa.me/595986914726', cv: ''
+  availability: 'Horario nocturno y fines de semana',
+  languages: 'Español y guaraní nativos · Comprensión básica de portugués e inglés',
+  phone: '+595986914726',
+  email: 'jemc2612@gmail.com',
+  github: 'https://github.com/J0NAsM',
+  linkedin: '',
+  whatsapp: 'https://wa.me/595986914726?text=Hola%2C%20Jonas.%20Te%20contacto%20desde%20tu%20portafolio%20profesional.%20Me%20gustar%C3%ADa%20conversar%20contigo%20sobre%20una%20oportunidad%20o%20proyecto.%20Saludos.',
+  emailDraft: 'mailto:jemc2612@gmail.com?subject=Contacto%20desde%20tu%20portafolio&body=Hola%2C%20Jonas.%0A%0ATe%20contacto%20desde%20tu%20portafolio%20profesional.%20Me%20gustar%C3%ADa%20conversar%20contigo%20sobre%20una%20oportunidad%20o%20proyecto.%0A%0ASaludos.',
+  cv: ''
 };
+
+const education = [
+  ['Educación escolar básica', 'Escuela Básica N.º 448 Dionisio Cabello', 'Preescolar al 9.º grado · Iniciación Profesional Agropecuaria (IPA)', 'Caroaguá, Paraguay'],
+  ['Bachillerato Técnico en Informática', 'Colegio Privado Subvencionado San Alfonso', '1.º al 3.º curso', 'Carapeguá, Paraguay'],
+  ['Estudios superiores', 'Análisis de Sistemas Informáticos', 'Formación en análisis, procesos, datos y desarrollo de software', 'Institución y periodo pendientes'],
+  ['Estudios superiores', 'Psicología', 'Estudios realizados en Psicología', 'Institución y periodo pendientes']
+];
 
 const services = [
   ['Desarrollo de software', 'Aplicaciones pensadas desde el problema: flujos, estados, excepciones y las personas que las operan.'],
@@ -77,8 +92,8 @@ const experience = [
   ['Perfil actual', 'Sistemas y productos digitales', 'Diseño y desarrollo de soluciones enfocadas en procesos, datos y operaciones reales.'],
   ['Formación', 'Análisis de Sistemas Informáticos', 'Formación principal para traducir necesidades de negocio en sistemas estructurados.'],
   ['Operaciones', 'Experiencia de caja y operación', 'Comprensión directa de procesos bajo presión, recursos y resolución de incidentes.'],
-  ['Servicio', 'Cuerpo de Bomberos Voluntarios de Carapeguá', 'Experiencia institucional que aporta coordinación, servicio y una mirada práctica sobre la información operativa.']
+  ['Servicio voluntario', 'Bombero Voluntario Combatiente · Rango Cabo', 'Servicio en el Cuerpo de Bomberos Voluntarios de Carapeguá, con experiencia en coordinación, trabajo en equipo, disciplina y respuesta operativa.']
 ];
 
-window.portfolioData = { profile, services, projects, skills, experience };
+window.portfolioData = { profile, services, projects, skills, experience, education };
 })();
