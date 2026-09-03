@@ -23,7 +23,7 @@
     "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "express-basic-auth": "^1.2.1",
-    "pdfkit": "^0.17.1"
+    "pdfkit": "^0.20.1"
   },
   "devDependencies": { "vite": "^7.1.7" },
   "overrides": {
