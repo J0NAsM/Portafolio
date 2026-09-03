@@ -4,6 +4,8 @@
 
 El repositorio `J0NAsM/Portafolio` debe usar `main` como rama principal y tener **Settings → Pages → Source: GitHub Actions**. Cada `push` a `main` ejecuta `.github/workflows/deploy.yml`, instala las dependencias bloqueadas, corre las pruebas, construye `dist/` y publica el artifact oficial de Pages.
 
+> **El ajuste `Source` es obligatorio, no opcional.** Si queda en *Deploy from a branch*, GitHub lanza además su constructor heredado —visible como el flujo **«pages build and deployment»**— que publica el contenido de la rama tal cual y sobrescribe el artifact del workflow. El resultado es un sitio servido desde la raíz del repositorio: sin `<base>`, sin las páginas de cada ruta, sin `sitemap.xml` y sin `robots.txt`, aunque el despliegue figure como correcto. Si ves ese flujo en la pestaña Actions, la fuente todavía no está en *GitHub Actions*.
+
 El build genera archivos de entrada para todas las rutas conocidas y `404.html` conserva la ruta solicitada antes de cargar la SPA. El sitio se publica en `https://j0nasm.github.io/Portafolio/`, usando `/Portafolio/` como ruta base.
 
 Verificación local:
