@@ -23,15 +23,26 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          set -euo pipefail
-          build_type="$(curl --fail --silent --show-error \
+          set -uo pipefail
+          response="$(curl --silent --show-error --write-out $'\n%{http_code}' \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "Accept: application/vnd.github+json" \
-            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pages" \
-            | sed -n 's/.*"build_type"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pages" || true)"
+          code="$(printf '%s' "$response" | tail -n1)"
+          body="$(printf '%s' "$response" | sed '$d')"
+
+          # Solo se bloquea cuando se lee un origen distinto de "workflow". Si la
+          # consulta no se puede hacer, se avisa y se sigue: no tiene sentido
+          # frenar una publicación válida por no poder comprobar el ajuste.
+          if [ "$code" != "200" ]; then
+            echo "::warning::No se pudo consultar el origen de GitHub Pages (HTTP ${code}). Se continúa sin esta comprobación."
+            exit 0
+          fi
+
+          build_type="$(printf '%s' "$body" | sed -n 's/.*"build_type"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
           echo "Origen de GitHub Pages: ${build_type:-desconocido}"
-          if [ "$build_type" != "workflow" ]; then
-            echo "::error::Pages está en '${build_type}'. Con 'legacy' GitHub ejecuta además su constructor heredado, que publica la rama tal cual y sobrescribe este artifact: el sitio queda sin <base>, sin las páginas de cada ruta, sin sitemap.xml ni robots.txt. Cámbialo en Settings → Pages → Source: GitHub Actions."
+          if [ -n "$build_type" ] && [ "$build_type" != "workflow" ]; then
+            echo "::error::Pages está configurado como '${build_type}'. Con ese ajuste GitHub ejecuta además su constructor heredado, que publica la rama tal cual y sobrescribe este artifact: el sitio queda sin <base>, sin las páginas de cada ruta, sin sitemap.xml ni robots.txt. Cámbialo en Settings → Pages → Source: GitHub Actions y vuelve a lanzar este flujo."
             exit 1
           fi
 
