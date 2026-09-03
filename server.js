@@ -10,6 +10,7 @@ import PDFDocument from 'pdfkit';
 import { normalizeBlogPost, readBlogPosts, writeBlogPosts } from './lib/blog-store.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
+const localSpaIndex = (await fs.readFile(path.join(root, 'index.html'), 'utf8')).replace('<head>', '<head>\n    <base href="/" />');
 const storageRoot = process.env.STORAGE_ROOT ? path.resolve(process.env.STORAGE_ROOT) : root;
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -29,13 +30,14 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
   "connect-src 'self'",
-  "font-src 'self' https://fonts.gstatic.com data:",
+  "font-src 'self' data:",
   "form-action 'self'",
   "frame-ancestors 'none'",
   "img-src 'self' data:",
   "object-src 'none'",
   "script-src 'self'",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com"
+  // Las tipografías son locales desde src/fonts.css: ya no hay orígenes de terceros.
+  "style-src 'self' 'unsafe-inline'"
 ].join('; ');
 
 app.set('trust proxy', process.env.TRUST_PROXY === '1');
@@ -169,7 +171,7 @@ app.get('/admin/errores/export', admin, async (request, response, next) => {
     return response.status(400).json({ error:'Formato no admitido.' });
   } catch (error) { next(error); }
 });
-app.get(/^\/(sobre-mi|proyectos(?:\/[^/]+)?|blog(?:\/[^/]+)?|muestras|experiencia|formacion|stack|cv|contacto)\/?$/, (_request, response) => response.sendFile(path.join(root, 'index.html')));
+app.get(/^\/(sobre-mi|proyectos(?:\/[^/]+)?|blog(?:\/[^/]+)?|muestras|experiencia|formacion|stack|cv|contacto)\/?$/, (_request, response) => response.type('html').send(localSpaIndex));
 app.use('/api', (_request,response)=>response.status(404).json({ error:'Endpoint no encontrado.' }));
 app.use((_request,response)=>response.status(404).sendFile(path.join(root,'404.html')));
 app.use((error,_request,response,_next)=>{ console.error(error); response.status(500).send('Error interno del servidor.'); });

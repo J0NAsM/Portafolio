@@ -1,0 +1,11 @@
+# Finales de línea uniformes en todas las plataformas. Es obligatorio para
+# 404.html: su Content-Security-Policy autoriza el script y el estilo embebidos
+# por hash SHA-256, y un checkout con CRLF cambiaría esos bytes e invalidaría
+# la política. El resto se normaliza por coherencia entre Windows y el CI.
+* text=auto eol=lf
+
+# Binarios: nunca deben pasar por conversión de texto.
+*.png binary
+*.webp binary
+*.woff2 binary
+*.ico binary

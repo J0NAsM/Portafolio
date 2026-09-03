@@ -50,3 +50,30 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify published site
+        shell: bash
+        run: |
+          set -euo pipefail
+          site_url="${{ steps.deployment.outputs.page_url }}"
+          site_url="${site_url%/}"
+
+          # Cada recurso debe existir: una ruta profunda, el sitemap o robots que
+          # falten significan que se publicó un artefacto incompleto o antiguo.
+          for path in "" src/main.js src/fonts.css robots.txt sitemap.xml \
+                      public/og.png public/site.webmanifest public/icons/icon-512.png \
+                      proyectos/ proyectos/portfolio/ cv/ contacto/; do
+            echo "Comprobando ${site_url}/${path}"
+            curl --fail --silent --show-error --location \
+                 --retry 6 --retry-delay 5 --retry-all-errors \
+                 --output /dev/null "${site_url}/${path}"
+          done
+
+          # El contenido servido tiene que ser el de esta compilación, no uno anterior.
+          home="$(curl --fail --silent --location --retry 6 --retry-delay 5 --retry-all-errors "${site_url}/")"
+          if ! printf '%s' "$home" | grep -q '<base href="/Portafolio/"'; then
+            echo "El sitio publicado no declara la subruta esperada."; exit 1
+          fi
+          if printf '%s' "$home" | grep -q 'fonts.googleapis.com'; then
+            echo "El sitio publicado aún pide tipografías a Google."; exit 1
+          fi
+          echo "Sitio publicado y verificado en ${site_url}/"

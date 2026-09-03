@@ -11,6 +11,7 @@
     "build": "node scripts/build-static.mjs",
     "preview": "vite preview",
     "start": "node server.js",
+    "assets": "node scripts/generate-assets.mjs",
     "test": "node scripts/verify.mjs && node scripts/accessibility-test.mjs && node scripts/asset-audit.mjs && node scripts/integration-test.mjs",
     "test:accessibility": "node scripts/accessibility-test.mjs",
     "test:integration": "node scripts/integration-test.mjs",

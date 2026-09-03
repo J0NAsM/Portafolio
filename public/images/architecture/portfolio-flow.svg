@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title description">
+  <title id="title">Flujo de calidad y publicación del portfolio</title>
+  <description id="description">El contenido pasa por construcción, verificación automatizada y despliegue en GitHub Pages.</description>
+  <defs>
+    <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+      <path d="M80 0H0V80" fill="none" stroke="#477264" stroke-width="1" opacity=".32"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0l10 5-10 5z" fill="#d5f054"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="720" fill="#143b32"/>
+  <rect width="1200" height="720" fill="url(#grid)"/>
+  <text x="70" y="78" fill="#d5f054" font-family="monospace" font-size="18" letter-spacing="2">PRODUCTO WEB · ENTREGA CONTINUA</text>
+  <text x="70" y="116" fill="#f5f5ef" font-family="Arial, sans-serif" font-size="28" font-weight="700">Del contenido a una publicación verificable</text>
+  <g font-family="Arial, sans-serif">
+    <g transform="translate(70 245)">
+      <rect width="275" height="205" rx="14" fill="#193f36" stroke="#8ee2bc" stroke-width="2"/>
+      <circle cx="38" cy="38" r="18" fill="#d5f054"/>
+      <text x="38" y="44" fill="#101514" font-size="16" font-weight="700" text-anchor="middle">1</text>
+      <text x="34" y="94" fill="#f5f5ef" font-size="24" font-weight="700">Construcción</text>
+      <text x="34" y="130" fill="#b9d1c8" font-size="16">Contenido · rutas · interfaz</text>
+      <text x="34" y="160" fill="#b9d1c8" font-size="16">HTML · CSS · JavaScript</text>
+    </g>
+    <g transform="translate(462 245)">
+      <rect width="275" height="205" rx="14" fill="#193f36" stroke="#8ee2bc" stroke-width="2"/>
+      <circle cx="38" cy="38" r="18" fill="#d5f054"/>
+      <text x="38" y="44" fill="#101514" font-size="16" font-weight="700" text-anchor="middle">2</text>
+      <text x="34" y="94" fill="#f5f5ef" font-size="24" font-weight="700">Verificación</text>
+      <text x="34" y="130" fill="#b9d1c8" font-size="16">Accesibilidad · assets</text>
+      <text x="34" y="160" fill="#b9d1c8" font-size="16">Integración · producción</text>
+    </g>
+    <g transform="translate(854 245)">
+      <rect width="275" height="205" rx="14" fill="#193f36" stroke="#8ee2bc" stroke-width="2"/>
+      <circle cx="38" cy="38" r="18" fill="#d5f054"/>
+      <text x="38" y="44" fill="#101514" font-size="16" font-weight="700" text-anchor="middle">3</text>
+      <text x="34" y="94" fill="#f5f5ef" font-size="24" font-weight="700">Publicación</text>
+      <text x="34" y="130" fill="#b9d1c8" font-size="16">Artifact reproducible</text>
+      <text x="34" y="160" fill="#b9d1c8" font-size="16">GitHub Actions · Pages</text>
+    </g>
+  </g>
+  <path d="M365 348h75" stroke="#d5f054" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M757 348h75" stroke="#d5f054" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="70" y="610" fill="#8ee2bc" font-family="monospace" font-size="16" letter-spacing="1">BUILD ESTÁTICO · PRUEBAS AUTOMATIZADAS · DESPLIEGUE CONTINUO</text>
+  <text x="70" y="650" fill="#b9d1c8" font-family="Arial, sans-serif" font-size="16">Evidencia pública: repositorio, historial de cambios y pipeline de entrega.</text>
+</svg>

@@ -4,7 +4,7 @@
 
 El repositorio `J0NAsM/Portafolio` debe usar `main` como rama principal y tener **Settings → Pages → Source: GitHub Actions**. Cada `push` a `main` ejecuta `.github/workflows/deploy.yml`, instala las dependencias bloqueadas, corre las pruebas, construye `dist/` y publica el artifact oficial de Pages.
 
-El build genera archivos de entrada para todas las rutas conocidas y `404.html` conserva la ruta solicitada antes de cargar la SPA. El sitio se publica en `https://j0nasm.github.io/portafolio/`, usando `/portafolio/` como ruta base.
+El build genera archivos de entrada para todas las rutas conocidas y `404.html` conserva la ruta solicitada antes de cargar la SPA. El sitio se publica en `https://j0nasm.github.io/Portafolio/`, usando `/Portafolio/` como ruta base.
 
 Verificación local:
 

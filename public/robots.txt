@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://j0nasm.github.io/portafolio/sitemap.xml

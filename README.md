@@ -1,77 +1,65 @@
 # Portfolio de Jonas Martínez
 
-Portfolio estático, responsive y sin dependencias de interfaz. Presenta proyectos con información segura y centraliza el contenido para facilitar futuras actualizaciones. Puede abrirse directamente con doble clic en `index.html`.
+Portfolio profesional de Jonas Emanuel Martínez Cáceres, desarrollador de software junior enfocado en sistemas empresariales, datos e interfaces operativas.
 
-## Stack
+**Sitio publicado:** [j0nasm.github.io/Portafolio](https://j0nasm.github.io/Portafolio/)
 
-- HTML, CSS y JavaScript clásico (se abre directamente con `index.html`)
-- Node.js/Express solo para el registro 404, el panel privado y las exportaciones
+## Características
 
-## Uso directo
+- Casos de estudio con estado, alcance, decisiones y nivel de evidencia claramente identificados.
+- Navegación SPA compatible con recargas directas en GitHub Pages.
+- Tema claro, oscuro y del sistema, diseño responsive y navegación por teclado.
+- CV profesional imprimible y canales de contacto con acciones de copia.
+- Metadatos individuales por ruta, sitemap, robots, manifest y experiencia offline.
+- Pruebas automatizadas de contenido, accesibilidad, recursos, integración y salida de producción.
 
-Abre `index.html` desde el explorador de archivos. No requiere Node.js, npm ni servidor local. La navegación funciona con enlaces `#` cuando se abre como archivo local.
+## Tecnología
 
-## Uso opcional con servidor local
+La interfaz utiliza HTML, CSS y JavaScript clásico. El build estático se genera con Node.js sin depender de un framework de interfaz. Express se conserva únicamente para herramientas locales opcionales de administración; no interviene en el sitio publicado.
+
+## Desarrollo local
+
+Requiere Node.js 20.19 o superior; se recomienda la versión indicada en `.nvmrc`.
 
 ```bash
 npm ci
 npm run dev
-npm run build
-npm test
-npm start
 ```
 
-Requiere Node.js 20.19 o superior (se recomienda la versión 22 indicada en `.nvmrc`). `npm ci` instala exactamente las dependencias bloqueadas en `package-lock.json`; utiliza `npm install` solo cuando vayas a modificar dependencias.
+La versión sin servidor también puede abrirse directamente desde `index.html`; en ese modo la navegación utiliza el hash de la URL.
 
-El build estático queda en `dist/` y conserva los archivos HTML, CSS y JavaScript clásicos sin bundler. También agrega la base de rutas de producción, genera entradas para las rutas públicas, el fallback SPA de GitHub Pages, `.nojekyll`, `robots.txt` y `sitemap.xml` en la raíz publicada. El archivo fuente `index.html` sigue pudiendo abrirse directamente.
+## Verificación
 
-## Contenido y configuración
+```bash
+npm test
+npm run build
+npm run test:production
+```
 
-Edita `src/data.js`. Allí se concentran el perfil, enlaces sociales, proyectos, tecnologías y experiencia.
+El build queda en `dist/` e incluye entradas HTML con metadatos propios para cada ruta pública, el fallback de GitHub Pages y todos los recursos necesarios.
 
-- Añade email, GitHub, LinkedIn, WhatsApp y CV únicamente cuando estén disponibles.
-- Para agregar un proyecto, duplica un objeto de `projects` y define un `slug` único.
-- El dominio de publicación configurado es `https://j0nasm.github.io/portafolio/`.
-- Puedes incorporar fotografía o capturas sanitizadas en `public/` y enlazarlas desde el contenido. No incluyas datos privados, clientes, credenciales ni capturas operativas sin anonimizar.
+## Recursos gráficos
 
-## Rutas
+Los iconos de aplicación, el favicon y la imagen para compartir se generan desde el trazado vectorial del logotipo, sin dependencias externas:
 
-`/`, `/sobre-mi`, `/proyectos`, `/proyectos/:slug`, `/blog`, `/blog/:slug`, `/experiencia`, `/formacion`, `/stack`, `/cv`, `/contacto`.
+```bash
+npm run assets
+```
 
-## Blog personal
+El comando escribe `public/icons/` (192, 512 y apple-touch de 180 píxeles), regenera `public/favicon.svg` y ajusta `public/og.png` al formato 1200 × 630 exigido por LinkedIn, WhatsApp y Facebook. Es idempotente: si la imagen ya está en ese tamaño, no la vuelve a remuestrear. `npm test` verifica las dimensiones y el peso de todos estos archivos.
 
-La ruta pública `/blog` agrupa las publicaciones publicadas por fecha y permite filtrarlas por categoría. Para crear, editar, publicar, guardar como borrador o eliminar una entrada, abre `http://localhost:3000/admin/blog` con las mismas credenciales del panel de errores.
+## Contenido
 
-El contenido se guarda en `content/blog-posts.json` y se sincroniza automáticamente con `public/blog-posts.js`, por lo que también se verá al abrir `index.html` directamente y se incluirá en el próximo `npm run build`.
+El perfil, la experiencia, las tecnologías y los proyectos se mantienen en `src/data.js`. Los casos privados se describen sin código propietario, credenciales, datos operativos ni capturas no autorizadas. Las interfaces conceptuales están señaladas como tales.
 
-Usa `templates/blog-post.json` como punto de partida para una publicación y `templates/project.js` para añadir un caso de estudio. Cada actualización del blog conserva una copia local de la versión anterior en `data/blog-backups/`; se mantienen las 20 más recientes y no se versionan.
+Las rutas principales son `/`, `/proyectos`, `/proyectos/:slug`, `/experiencia`, `/formacion`, `/stack`, `/sobre-mi`, `/cv`, `/contacto`, `/muestras` y `/privacidad`. El blog solo se incorpora al build y al sitemap cuando existe al menos una publicación pública.
 
-## CV ATS
+## Despliegue
 
-La ruta `#/cv` abre una plantilla imprimible de una sola columna. Sus campos editables se guardan en el navegador actual; completa todos los campos entre corchetes antes de imprimir o enviar el CV. El diseño de impresión usa tamaño Letter, márgenes de 2,54 cm y tipografía Arial/Calibri.
+Cada push a `main` ejecuta pruebas, crea la salida estática, valida rutas y recursos, y despliega `dist/` mediante el workflow oficial de GitHub Pages en `.github/workflows/deploy.yml`.
 
-## Panel privado de errores 404
+En **Settings → Pages → Build and deployment**, la fuente del repositorio debe estar configurada como **GitHub Actions**. El nombre actual del repositorio es `Portafolio`; GitHub distingue mayúsculas en esta ruta, por eso la URL de producción configurada es `https://j0nasm.github.io/Portafolio/`.
 
-El proyecto puede ejecutarse como servidor con `npm start`. Copia `.env.example` a `.env`, completa las tres credenciales obligatorias y abre `http://localhost:3000/admin/errores`. En producción usa HTTPS y una contraseña única; no publiques el archivo `.env`.
+GitHub Pages solo hospeda archivos estáticos. El panel local de errores, la edición administrativa del blog y las exportaciones de `server.js` requieren Node.js y no se publican ni se simulan en Pages.
 
-El panel está protegido mediante autenticación básica, permite filtrar por ruta, referrer y fechas, y exporta los registros filtrados a Excel (`.xlsx`), PDF, CSV o TXT en forma de tabla. Sin `ERROR_LOG_SALT`, el endpoint 404 no guarda registros. Los logs se guardan localmente en `data/404-errors.json`, no se versionan y se depuran automáticamente según `ERROR_LOG_RETENTION_DAYS`; `ERROR_LOG_MAX_RECORDS` limita el crecimiento del archivo.
-
-El registro está minimizado: ruta, referrer, idioma, zona horaria, resolución, user-agent, IP enmascarada y hash técnico. No añade fingerprinting, geolocalización externa ni anuncios. Los CSV y XLSX neutralizan valores que podrían interpretarse como fórmulas. Consulta `public/privacy.html` antes de desplegar y adapta el aviso legal a tu jurisdicción.
-
-## Calidad incluida
-
-Tema claro/oscuro/sistema persistente, navegación de teclado, foco visible, comando `Ctrl/Cmd + K`, navegación móvil, reduced motion por ausencia de animaciones esenciales, metadatos SEO, `robots.txt`, sitemap, manifest y vista 404.
-
-Cada push y pull request a `main` ejecuta en GitHub Actions la instalación reproducible, el build y las verificaciones. Dependabot propone mensualmente actualizaciones de dependencias y de las acciones de GitHub.
-
-`npm test` valida contenido, rutas, accesibilidad estática, presupuesto de recursos e integración del servidor (autenticación, protección de origen, exportación, blog, respaldos y paginación). Puedes ejecutar por separado `npm run test:accessibility`, `npm run test:integration` o `npm run audit:assets` durante el desarrollo.
-
-## Deploy
-
-Cada `push` a `main` ejecuta pruebas, construye `dist/`, verifica las rutas de producción y despliega automáticamente mediante `.github/workflows/deploy.yml`. El repositorio es `J0NAsM/Portafolio`, se publica bajo `/portafolio/` y Pages debe usar **GitHub Actions** como fuente.
-
-El panel privado de errores, la edición web del blog y las exportaciones requieren un entorno Node.js que ejecute `server.js`; no están incluidos en GitHub Pages. Las publicaciones ya guardadas en `content/blog-posts.json` sí se incorporan al build estático.
-
-GitHub Pages habilita HTTPS para el dominio `github.io`. No subas `.env`, la carpeta `data/` ni sus registros.
-
-Consulta `docs/deployment.md` para publicar una versión estática o el servidor Node.js, `docs/prepublish-checklist.md` antes de hacerlo y `CONTRIBUTING.md` para las convenciones de mantenimiento.
+Consulta [la guía de despliegue](docs/deployment.md) y [la lista de revisión](docs/prepublish-checklist.md) para mantenimiento futuro.
