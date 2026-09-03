@@ -19,7 +19,7 @@
     "audit:assets": "node scripts/asset-audit.mjs"
   },
   "dependencies": {
-    "dotenv": "^16.6.1",
+    "dotenv": "^17.4.2",
     "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "express-basic-auth": "^1.2.1",
