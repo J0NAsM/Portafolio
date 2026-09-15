@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "PROJECT_ID": "portafolio",
+  "PROJECT_NAME": "Portafolio",
+  "TYPE": "static-web",
+  "TECH_STACK": "JavaScript/Vite; generador estático multipágina; Express opcional y JSON",
+  "TECH_STACK_SOURCE": [
+    "package.json"
+  ],
+  "ENVIRONMENT": "NO DETERMINADO",
+  "STATUS": "NO DETERMINADO",
+  "OBSERVED_STATE": "Portafolio con publicación estática y servicios opcionales.",
+  "VERSION_SOURCE": [
+    "package.json"
+  ],
+  "LAST_CONTEXT_UPDATE": "2026-09-14",
+  "LAST_VALIDATION": {
+    "date": "NO DETERMINADO",
+    "revision": "NO DETERMINADO",
+    "command": "NO DETERMINADO",
+    "result": "NO DETERMINADO"
+  },
+  "LAST_DEPLOY": "NO DETERMINADO",
+  "EXTERNAL_DEPENDENCIES": "Hosting estático o Node según modalidad.",
+  "CONFIG_SOURCES": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/deploy.yml"
+  ],
+  "SOURCE_HASHES": {
+    "package.json": "0ab8a6a25ca3c6f69f8dc6d7f708ae8104d8f63e2bdcf71aad756b3d24294a90",
+    ".github/workflows/ci.yml": "5e0bb51c48b0d74fc6e2d8bcd56d2e78cc68c3342a828512099e7b2ceebaf468",
+    ".github/workflows/deploy.yml": "9fda76eadf9bcf8536eb586977225d99ce82965ec3613e93385cb84402092573"
+  },
+  "VAULTS_ROOT_RELATIVE": "../Vaults/jmartinez"
+}

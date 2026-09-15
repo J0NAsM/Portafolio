@@ -1,3 +1,11 @@
+<!-- BEGIN ECOSYSTEM CURRENT -->
+El build principal usa scripts/build-static.mjs y genera un sitio estático multipágina. No agregar fallback SPA por estas notas. El servidor Express es una modalidad separada; consultar ejecucion.md.
+<!-- END ECOSYSTEM CURRENT -->
+
+<!-- BEGIN ECOSYSTEM ENTRY -->
+Entrada vigente: [Portafolio — contexto](<contexto.md>). Identidad, alcance, reglas y comandos se consultan desde esa entrada. La documentación histórica se conserva; sus fotografías de estado no acreditan la situación actual.
+<!-- END ECOSYSTEM ENTRY -->
+
 # Contexto del proyecto
 
 ## Arquitectura

@@ -1,3 +1,7 @@
+<!-- BEGIN ECOSYSTEM ENTRY -->
+Entrada vigente: [Portafolio — contexto](<.context/contexto.md>). Identidad, alcance, reglas y comandos se consultan desde esa entrada. La documentación histórica se conserva; sus fotografías de estado no acreditan la situación actual.
+<!-- END ECOSYSTEM ENTRY -->
+
 # Portfolio de Jonas Martínez
 
 Portfolio profesional de Jonas Emanuel Martínez Cáceres, desarrollador de software junior enfocado en sistemas empresariales, datos e interfaces operativas.

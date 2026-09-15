@@ -37,6 +37,7 @@ desktop.ini
 .vscode/
 *.swp
 
-# Notas internas del proyecto
-.context/
+# Contexto versionado; estado local de Obsidian ignorado
+.context/.obsidian/workspace*.json
+.context/.obsidian/cache/
 PENDIENTES-PORTAFOLIO.md
